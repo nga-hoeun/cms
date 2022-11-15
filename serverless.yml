@@ -1,0 +1,44 @@
+service: CMS
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  profile: APIStartUp
+  region: ap-southeast-1
+
+layers:
+    userLibs:
+      path: layer
+      compatibleRuntimes:
+        - nodejs14.x
+
+functions:
+  user: 
+    handler: handler.routesHandlers
+    layers:
+      - { Ref: UserLibsLambdaLayer}
+    events:
+      - http: 
+          path: /{proxy+}
+          method: ANY
+
+  post: 
+    handler: handler.routesHandlers
+    layers:
+      - { Ref: UserLibsLambdaLayer}
+    events:
+      - http: 
+          path: /post/{proxy+}
+          method: ANY
+
+    
+package:
+  individually: true 
+  exclude:
+    - ./node_modules
+  include: 
+    - ./
+
+plugins:
+  - serverless-plugin-typescript

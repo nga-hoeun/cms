@@ -1,0 +1,23 @@
+{
+  "verbose": true,
+  "debug": false,
+  "exec": "npm run start:dev",
+  "ignore": [
+    "mochawesome-report",
+    "node_modules",
+    "dist",
+    "./test",
+    "*.test.ts",
+    "*.spec.ts",
+    "test/**/*",
+    "docs/*"
+  ],
+  "events": {
+    "restart": "echo [Warning] Remember run npm run test b4 push to dev branch !"
+  },
+  "watch": [
+    "./src"
+  ],
+  "ext": "ts",
+  "inspect": true
+}
