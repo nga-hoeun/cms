@@ -167,7 +167,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/CMS/dev/1668584194057-2022-11-16T07:36:34.057Z/CMS.zip"
+          "S3Key": "serverless/CMS/dev/1668594223157-2022-11-16T10:23:43.157Z/CMS.zip"
         },
         "Handler": "src/handler.routesHandlers",
         "Runtime": "nodejs14.x",
@@ -192,7 +192,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/CMS/dev/1668584194057-2022-11-16T07:36:34.057Z/CMS.zip"
+          "S3Key": "serverless/CMS/dev/1668594223157-2022-11-16T10:23:43.157Z/CMS.zip"
         },
         "Handler": "src/handler.routesHandlers",
         "Runtime": "nodejs14.x",
@@ -210,24 +210,24 @@
         "PostLogGroup"
       ]
     },
-    "UserLambdaVersion47GrhDmBXCFw4DJIFGWKaDjYnHrJGOK8mbLi7mVpfw": {
+    "UserLambdaVersion1IuJsRtKZl1FSx7bFnlLna7kWwLxTeAVT6Dyb1HoI": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "UserLambdaFunction"
         },
-        "CodeSha256": "r945O3rqLHb/cMAXvLDqwkqBvRqXQAUk/gNKaOJj1u4="
+        "CodeSha256": "PgbfJS2C6UOET0dGf+8W8h+AJH7BX8hBPQjRQPPLUNo="
       }
     },
-    "PostLambdaVersiony1OnZP6s3GnjUXkxlQxCyqwEHqlqNxOFRctfSnm9s": {
+    "PostLambdaVersion0oQc3AMU516xX9Wn7Uyc9rHGGiMLmF1DCP4JVcR9OA": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "PostLambdaFunction"
         },
-        "CodeSha256": "r945O3rqLHb/cMAXvLDqwkqBvRqXQAUk/gNKaOJj1u4="
+        "CodeSha256": "PgbfJS2C6UOET0dGf+8W8h+AJH7BX8hBPQjRQPPLUNo="
       }
     },
     "ApiGatewayRestApi": {
@@ -388,7 +388,7 @@
         "PostLambdaPermissionApiGateway"
       ]
     },
-    "ApiGatewayDeployment1668584181931": {
+    "ApiGatewayDeployment1668594210157": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -488,7 +488,7 @@
     "UserLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "UserLambdaVersion47GrhDmBXCFw4DJIFGWKaDjYnHrJGOK8mbLi7mVpfw"
+        "Ref": "UserLambdaVersion1IuJsRtKZl1FSx7bFnlLna7kWwLxTeAVT6Dyb1HoI"
       },
       "Export": {
         "Name": "sls-CMS-dev-UserLambdaFunctionQualifiedArn"
@@ -497,7 +497,7 @@
     "PostLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "PostLambdaVersiony1OnZP6s3GnjUXkxlQxCyqwEHqlqNxOFRctfSnm9s"
+        "Ref": "PostLambdaVersion0oQc3AMU516xX9Wn7Uyc9rHGGiMLmF1DCP4JVcR9OA"
       },
       "Export": {
         "Name": "sls-CMS-dev-PostLambdaFunctionQualifiedArn"

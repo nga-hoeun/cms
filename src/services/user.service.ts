@@ -108,14 +108,17 @@ export default class UserService {
           gender: {
             $value: user.gender,
           },
+          age: {
+            $value: user.age,
+          }
         },
       });
       console.log(exp);
       const params: UpdateItemInput = {
         TableName: process.env.DYNAMODB_TABLE,
         Key: {
-          pk: { S: `USER#${id}` },
-          sk: { S: `USER_AUTH#${id}` },
+          pk: { S: `USER#ALL` },
+          sk: { S: `USER#${id}` },
         },
         ExpressionAttributeNames:
           exp.ExpressionAttributeNames as ExpressionAttributeNameMap,
