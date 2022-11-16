@@ -160,21 +160,6 @@
         }
       }
     },
-    "UserLibsLambdaLayer": {
-      "Type": "AWS::Lambda::LayerVersion",
-      "Properties": {
-        "Content": {
-          "S3Bucket": {
-            "Ref": "ServerlessDeploymentBucket"
-          },
-          "S3Key": "serverless/CMS/dev/1668480045284-2022-11-15T02:40:45.284Z/userLibs.zip"
-        },
-        "LayerName": "userLibs",
-        "CompatibleRuntimes": [
-          "nodejs14.x"
-        ]
-      }
-    },
     "UserLambdaFunction": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
@@ -182,9 +167,9 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/CMS/dev/1668480045284-2022-11-15T02:40:45.284Z/user.zip"
+          "S3Key": "serverless/CMS/dev/1668584194057-2022-11-16T07:36:34.057Z/CMS.zip"
         },
-        "Handler": "handler.routesHandlers",
+        "Handler": "src/handler.routesHandlers",
         "Runtime": "nodejs14.x",
         "FunctionName": "CMS-dev-user",
         "MemorySize": 1024,
@@ -194,12 +179,7 @@
             "IamRoleLambdaExecution",
             "Arn"
           ]
-        },
-        "Layers": [
-          {
-            "Ref": "UserLibsLambdaLayer"
-          }
-        ]
+        }
       },
       "DependsOn": [
         "UserLogGroup"
@@ -212,9 +192,9 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/CMS/dev/1668480045284-2022-11-15T02:40:45.284Z/post.zip"
+          "S3Key": "serverless/CMS/dev/1668584194057-2022-11-16T07:36:34.057Z/CMS.zip"
         },
-        "Handler": "handler.routesHandlers",
+        "Handler": "src/handler.routesHandlers",
         "Runtime": "nodejs14.x",
         "FunctionName": "CMS-dev-post",
         "MemorySize": 1024,
@@ -224,35 +204,30 @@
             "IamRoleLambdaExecution",
             "Arn"
           ]
-        },
-        "Layers": [
-          {
-            "Ref": "UserLibsLambdaLayer"
-          }
-        ]
+        }
       },
       "DependsOn": [
         "PostLogGroup"
       ]
     },
-    "UserLambdaVersionR29ikYk8kNQpufPPHWqhErOmZDmcC3rxFXk6oFnZtMk": {
+    "UserLambdaVersion47GrhDmBXCFw4DJIFGWKaDjYnHrJGOK8mbLi7mVpfw": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "UserLambdaFunction"
         },
-        "CodeSha256": "ysJC5nvN5l+owEKmLsyxAgvpLw+n4QTbxgckwShxehY="
+        "CodeSha256": "r945O3rqLHb/cMAXvLDqwkqBvRqXQAUk/gNKaOJj1u4="
       }
     },
-    "PostLambdaVersionV147Gqd55BnQ3bTivoWh5UTK358kSesFgkiXtUCAM": {
+    "PostLambdaVersiony1OnZP6s3GnjUXkxlQxCyqwEHqlqNxOFRctfSnm9s": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "PostLambdaFunction"
         },
-        "CodeSha256": "ysJC5nvN5l+owEKmLsyxAgvpLw+n4QTbxgckwShxehY="
+        "CodeSha256": "r945O3rqLHb/cMAXvLDqwkqBvRqXQAUk/gNKaOJj1u4="
       }
     },
     "ApiGatewayRestApi": {
@@ -267,7 +242,7 @@
         "Policy": ""
       }
     },
-    "ApiGatewayResourceProxyVar": {
+    "ApiGatewayResourceUser": {
       "Type": "AWS::ApiGateway::Resource",
       "Properties": {
         "ParentId": {
@@ -275,6 +250,18 @@
             "ApiGatewayRestApi",
             "RootResourceId"
           ]
+        },
+        "PathPart": "user",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceUserProxyVar": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceUser"
         },
         "PathPart": "{proxy+}",
         "RestApiId": {
@@ -309,13 +296,13 @@
         }
       }
     },
-    "ApiGatewayMethodProxyVarAny": {
+    "ApiGatewayMethodUserProxyVarAny": {
       "Type": "AWS::ApiGateway::Method",
       "Properties": {
         "HttpMethod": "ANY",
         "RequestParameters": {},
         "ResourceId": {
-          "Ref": "ApiGatewayResourceProxyVar"
+          "Ref": "ApiGatewayResourceUserProxyVar"
         },
         "RestApiId": {
           "Ref": "ApiGatewayRestApi"
@@ -401,7 +388,7 @@
         "PostLambdaPermissionApiGateway"
       ]
     },
-    "ApiGatewayDeployment1668479870492": {
+    "ApiGatewayDeployment1668584181931": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -410,7 +397,7 @@
         "StageName": "dev"
       },
       "DependsOn": [
-        "ApiGatewayMethodProxyVarAny",
+        "ApiGatewayMethodUserProxyVarAny",
         "ApiGatewayMethodPostProxyVarAny"
       ]
     },
@@ -498,33 +485,10 @@
         "Name": "sls-CMS-dev-ServerlessDeploymentBucketName"
       }
     },
-    "UserLibsLambdaLayerQualifiedArn": {
-      "Description": "Current Lambda layer version",
-      "Value": {
-        "Ref": "UserLibsLambdaLayer"
-      },
-      "Export": {
-        "Name": "sls-CMS-dev-UserLibsLambdaLayerQualifiedArn"
-      }
-    },
-    "UserLibsLambdaLayerHash": {
-      "Description": "Current Lambda layer hash",
-      "Value": "d9559c570b2824fce3f0c3d2083621f734d09227",
-      "Export": {
-        "Name": "sls-CMS-dev-UserLibsLambdaLayerHash"
-      }
-    },
-    "UserLibsLambdaLayerS3Key": {
-      "Description": "Current Lambda layer S3Key",
-      "Value": "serverless/CMS/dev/1668480045284-2022-11-15T02:40:45.284Z/userLibs.zip",
-      "Export": {
-        "Name": "sls-CMS-dev-UserLibsLambdaLayerS3Key"
-      }
-    },
     "UserLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "UserLambdaVersionR29ikYk8kNQpufPPHWqhErOmZDmcC3rxFXk6oFnZtMk"
+        "Ref": "UserLambdaVersion47GrhDmBXCFw4DJIFGWKaDjYnHrJGOK8mbLi7mVpfw"
       },
       "Export": {
         "Name": "sls-CMS-dev-UserLambdaFunctionQualifiedArn"
@@ -533,7 +497,7 @@
     "PostLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "PostLambdaVersionV147Gqd55BnQ3bTivoWh5UTK358kSesFgkiXtUCAM"
+        "Ref": "PostLambdaVersiony1OnZP6s3GnjUXkxlQxCyqwEHqlqNxOFRctfSnm9s"
       },
       "Export": {
         "Name": "sls-CMS-dev-PostLambdaFunctionQualifiedArn"

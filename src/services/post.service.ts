@@ -1,12 +1,12 @@
 import dynamoose from "dynamoose";
-import { getDynamoExpression } from "../../utils/dynamoose.util";
+import { getDynamoExpression } from "../utils/dynamoose.util";
 import {
   ExpressionAttributeNameMap,
   ExpressionAttributeValueMap,
   UpdateItemInput,
 } from "aws-sdk/clients/dynamodb";
 import cmsModel from "../models/cms.model";
-import { HttpException } from "../../utils/error.utils";
+import { HttpException } from "../utils/error.utils";
 import { v4 as uuidv4 } from "uuid";
 import { Post } from "../interfaces/posts.interface";
 
@@ -38,16 +38,16 @@ export default class PostService {
   }
 
   public async getOnePost(id: string) {
-    const userFound = PostModel.query(
+    const postFound = PostModel.query(
       {
         "pk":"POST#All",
         "sk":`POST#${id}`
       }
     ).exec();
-    if ((await userFound).count == 0) {
+    if ((await postFound).count == 0) {
       throw new HttpException(404, "Post doesn't exist");
     }
-    return userFound;
+    return postFound;
   }
 
   public async updateOnePost(id: string, post: Post) {
@@ -65,7 +65,7 @@ export default class PostService {
     const params: UpdateItemInput = {
       TableName: process.env.DYNAMODB_TABLE,
       Key: {
-        pk: { S: `POST#ALL` },
+        pk: { S: `POST#All` },
         sk: { S: `POST#${id}` },
       },
       ExpressionAttributeNames:
@@ -77,7 +77,6 @@ export default class PostService {
     console.log(params);
     try {
       const data = await ddbClient.updateItem(params).promise();
-      console.log("Success - item added or updated", data);
       return data;
     } catch (err) {
       console.log("Error", err);

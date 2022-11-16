@@ -2,7 +2,7 @@ import { NextFunction, Response,Request } from 'express';
 import { verify } from 'jsonwebtoken';
 import cmsModel from '../models/cms.model';
 import { DataStoredInToken} from '../interfaces/users.interface';
-import { HttpException } from '../../utils/error.utils';
+import { HttpException } from '../utils/error.utils';
 
 const UserModel = cmsModel[1]
 

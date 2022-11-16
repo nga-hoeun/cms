@@ -173,21 +173,6 @@
               }
             }
           },
-          "UserLibsLambdaLayer": {
-            "Type": "AWS::Lambda::LayerVersion",
-            "Properties": {
-              "Content": {
-                "S3Bucket": {
-                  "Ref": "ServerlessDeploymentBucket"
-                },
-                "S3Key": "serverless/CMS/dev/1668480045284-2022-11-15T02:40:45.284Z/userLibs.zip"
-              },
-              "LayerName": "userLibs",
-              "CompatibleRuntimes": [
-                "nodejs14.x"
-              ]
-            }
-          },
           "UserLambdaFunction": {
             "Type": "AWS::Lambda::Function",
             "Properties": {
@@ -195,9 +180,9 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/CMS/dev/1668480045284-2022-11-15T02:40:45.284Z/user.zip"
+                "S3Key": "serverless/CMS/dev/1668584194057-2022-11-16T07:36:34.057Z/CMS.zip"
               },
-              "Handler": "handler.routesHandlers",
+              "Handler": "src/handler.routesHandlers",
               "Runtime": "nodejs14.x",
               "FunctionName": "CMS-dev-user",
               "MemorySize": 1024,
@@ -207,12 +192,7 @@
                   "IamRoleLambdaExecution",
                   "Arn"
                 ]
-              },
-              "Layers": [
-                {
-                  "Ref": "UserLibsLambdaLayer"
-                }
-              ]
+              }
             },
             "DependsOn": [
               "UserLogGroup"
@@ -225,9 +205,9 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/CMS/dev/1668480045284-2022-11-15T02:40:45.284Z/post.zip"
+                "S3Key": "serverless/CMS/dev/1668584194057-2022-11-16T07:36:34.057Z/CMS.zip"
               },
-              "Handler": "handler.routesHandlers",
+              "Handler": "src/handler.routesHandlers",
               "Runtime": "nodejs14.x",
               "FunctionName": "CMS-dev-post",
               "MemorySize": 1024,
@@ -237,35 +217,30 @@
                   "IamRoleLambdaExecution",
                   "Arn"
                 ]
-              },
-              "Layers": [
-                {
-                  "Ref": "UserLibsLambdaLayer"
-                }
-              ]
+              }
             },
             "DependsOn": [
               "PostLogGroup"
             ]
           },
-          "UserLambdaVersionR29ikYk8kNQpufPPHWqhErOmZDmcC3rxFXk6oFnZtMk": {
+          "UserLambdaVersion47GrhDmBXCFw4DJIFGWKaDjYnHrJGOK8mbLi7mVpfw": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "UserLambdaFunction"
               },
-              "CodeSha256": "ysJC5nvN5l+owEKmLsyxAgvpLw+n4QTbxgckwShxehY="
+              "CodeSha256": "r945O3rqLHb/cMAXvLDqwkqBvRqXQAUk/gNKaOJj1u4="
             }
           },
-          "PostLambdaVersionV147Gqd55BnQ3bTivoWh5UTK358kSesFgkiXtUCAM": {
+          "PostLambdaVersiony1OnZP6s3GnjUXkxlQxCyqwEHqlqNxOFRctfSnm9s": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "PostLambdaFunction"
               },
-              "CodeSha256": "ysJC5nvN5l+owEKmLsyxAgvpLw+n4QTbxgckwShxehY="
+              "CodeSha256": "r945O3rqLHb/cMAXvLDqwkqBvRqXQAUk/gNKaOJj1u4="
             }
           },
           "ApiGatewayRestApi": {
@@ -280,7 +255,7 @@
               "Policy": ""
             }
           },
-          "ApiGatewayResourceProxyVar": {
+          "ApiGatewayResourceUser": {
             "Type": "AWS::ApiGateway::Resource",
             "Properties": {
               "ParentId": {
@@ -288,6 +263,18 @@
                   "ApiGatewayRestApi",
                   "RootResourceId"
                 ]
+              },
+              "PathPart": "user",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayResourceUserProxyVar": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Ref": "ApiGatewayResourceUser"
               },
               "PathPart": "{proxy+}",
               "RestApiId": {
@@ -322,13 +309,13 @@
               }
             }
           },
-          "ApiGatewayMethodProxyVarAny": {
+          "ApiGatewayMethodUserProxyVarAny": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
               "HttpMethod": "ANY",
               "RequestParameters": {},
               "ResourceId": {
-                "Ref": "ApiGatewayResourceProxyVar"
+                "Ref": "ApiGatewayResourceUserProxyVar"
               },
               "RestApiId": {
                 "Ref": "ApiGatewayRestApi"
@@ -414,7 +401,7 @@
               "PostLambdaPermissionApiGateway"
             ]
           },
-          "ApiGatewayDeployment1668479870492": {
+          "ApiGatewayDeployment1668584181931": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -423,7 +410,7 @@
               "StageName": "dev"
             },
             "DependsOn": [
-              "ApiGatewayMethodProxyVarAny",
+              "ApiGatewayMethodUserProxyVarAny",
               "ApiGatewayMethodPostProxyVarAny"
             ]
           },
@@ -511,33 +498,10 @@
               "Name": "sls-CMS-dev-ServerlessDeploymentBucketName"
             }
           },
-          "UserLibsLambdaLayerQualifiedArn": {
-            "Description": "Current Lambda layer version",
-            "Value": {
-              "Ref": "UserLibsLambdaLayer"
-            },
-            "Export": {
-              "Name": "sls-CMS-dev-UserLibsLambdaLayerQualifiedArn"
-            }
-          },
-          "UserLibsLambdaLayerHash": {
-            "Description": "Current Lambda layer hash",
-            "Value": "d9559c570b2824fce3f0c3d2083621f734d09227",
-            "Export": {
-              "Name": "sls-CMS-dev-UserLibsLambdaLayerHash"
-            }
-          },
-          "UserLibsLambdaLayerS3Key": {
-            "Description": "Current Lambda layer S3Key",
-            "Value": "serverless/CMS/dev/1668480045284-2022-11-15T02:40:45.284Z/userLibs.zip",
-            "Export": {
-              "Name": "sls-CMS-dev-UserLibsLambdaLayerS3Key"
-            }
-          },
           "UserLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "UserLambdaVersionR29ikYk8kNQpufPPHWqhErOmZDmcC3rxFXk6oFnZtMk"
+              "Ref": "UserLambdaVersion47GrhDmBXCFw4DJIFGWKaDjYnHrJGOK8mbLi7mVpfw"
             },
             "Export": {
               "Name": "sls-CMS-dev-UserLambdaFunctionQualifiedArn"
@@ -546,7 +510,7 @@
           "PostLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "PostLambdaVersionV147Gqd55BnQ3bTivoWh5UTK358kSesFgkiXtUCAM"
+              "Ref": "PostLambdaVersiony1OnZP6s3GnjUXkxlQxCyqwEHqlqNxOFRctfSnm9s"
             },
             "Export": {
               "Name": "sls-CMS-dev-PostLambdaFunctionQualifiedArn"
@@ -664,20 +628,37 @@
       },
       "vpc": {}
     },
+    "custom": {
+      "bundle": {
+        "linting": false
+      },
+      "webpack": {
+        "packager": "npm",
+        "packagerOptions": {},
+        "webpackConfig": "node_modules/serverless-bundle/src/webpack.config.js",
+        "includeModules": {
+          "forceExclude": [
+            "aws-sdk"
+          ],
+          "forceInclude": null,
+          "packagePath": "package.json"
+        },
+        "excludeFiles": null,
+        "excludeRegex": {},
+        "keepOutputDirectory": false
+      }
+    },
     "plugins": [
-      "serverless-plugin-typescript"
+      "serverless-bundle"
     ],
     "pluginsData": {},
     "functions": {
       "user": {
-        "handler": "handler.routesHandlers",
-        "layers": {
-          "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"UserLambdaFunction\"][\"Properties\"][\"Layers\"]"
-        },
+        "handler": "src/handler.routesHandlers",
         "events": [
           {
             "http": {
-              "path": "{proxy+}",
+              "path": "user/{proxy+}",
               "method": "any",
               "integration": "AWS_PROXY"
             }
@@ -685,24 +666,16 @@
         ],
         "name": "CMS-dev-user",
         "package": {
-          "exclude": [
-            "node_modules/serverless-plugin-typescript"
-          ],
-          "include": [],
-          "patterns": [],
-          "artifact": "/Users/slash/Desktop/CMS/.serverless/user.zip"
+          "artifact": ".serverless/CMS.zip"
         },
         "memory": 1024,
         "timeout": 6,
         "runtime": "nodejs14.x",
         "vpc": {},
-        "versionLogicalId": "UserLambdaVersionR29ikYk8kNQpufPPHWqhErOmZDmcC3rxFXk6oFnZtMk"
+        "versionLogicalId": "UserLambdaVersion47GrhDmBXCFw4DJIFGWKaDjYnHrJGOK8mbLi7mVpfw"
       },
       "post": {
-        "handler": "handler.routesHandlers",
-        "layers": {
-          "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"PostLambdaFunction\"][\"Properties\"][\"Layers\"]"
-        },
+        "handler": "src/handler.routesHandlers",
         "events": [
           {
             "http": {
@@ -714,18 +687,13 @@
         ],
         "name": "CMS-dev-post",
         "package": {
-          "exclude": [
-            "node_modules/serverless-plugin-typescript"
-          ],
-          "include": [],
-          "patterns": [],
-          "artifact": "/Users/slash/Desktop/CMS/.serverless/post.zip"
+          "artifact": ".serverless/CMS.zip"
         },
         "memory": 1024,
         "timeout": 6,
         "runtime": "nodejs14.x",
         "vpc": {},
-        "versionLogicalId": "PostLambdaVersionV147Gqd55BnQ3bTivoWh5UTK358kSesFgkiXtUCAM"
+        "versionLogicalId": "PostLambdaVersiony1OnZP6s3GnjUXkxlQxCyqwEHqlqNxOFRctfSnm9s"
       }
     },
     "configValidationMode": "warn",
@@ -736,43 +704,27 @@
       "provider": {
         "$ref": "$[\"service\"][\"provider\"]"
       },
-      "layers": {
-        "userLibs": {
-          "path": "layer",
-          "compatibleRuntimes": {
-            "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"UserLibsLambdaLayer\"][\"Properties\"][\"CompatibleRuntimes\"]"
-          },
-          "package": {
-            "artifact": "/Users/slash/Desktop/CMS/.serverless/userLibs.zip"
-          }
-        }
-      },
       "functions": {
         "$ref": "$[\"service\"][\"functions\"]"
       },
+      "custom": {
+        "$ref": "$[\"service\"][\"custom\"]"
+      },
       "package": {
-        "individually": true,
-        "exclude": [
-          "./node_modules"
-        ],
-        "include": [
-          "./"
-        ],
+        "individually": false,
         "artifactsS3KeyDirname": "serverless/CMS/dev/code-artifacts",
-        "artifactDirectoryName": "serverless/CMS/dev/1668480045284-2022-11-15T02:40:45.284Z"
+        "artifactDirectoryName": "serverless/CMS/dev/1668584194057-2022-11-16T07:36:34.057Z"
       },
       "plugins": {
         "$ref": "$[\"service\"][\"plugins\"]"
       }
     },
-    "layers": {
-      "$ref": "$[\"service\"][\"initialServerlessConfig\"][\"layers\"]"
-    },
+    "layers": {},
     "isDashboardMonitoringPreconfigured": false
   },
   "package": {
-    "individually": true,
-    "artifactDirectoryName": "serverless/CMS/dev/1668480045284-2022-11-15T02:40:45.284Z",
+    "individually": false,
+    "artifactDirectoryName": "serverless/CMS/dev/1668584194057-2022-11-16T07:36:34.057Z",
     "artifact": ""
   }
 }

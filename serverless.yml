@@ -7,38 +7,29 @@ provider:
   profile: APIStartUp
   region: ap-southeast-1
 
-layers:
-    userLibs:
-      path: layer
-      compatibleRuntimes:
-        - nodejs14.x
-
 functions:
   user: 
-    handler: handler.routesHandlers
-    layers:
-      - { Ref: UserLibsLambdaLayer}
+    handler: src/handler.routesHandlers
     events:
       - http: 
-          path: /{proxy+}
+          path: /user/{proxy+}
           method: ANY
 
   post: 
-    handler: handler.routesHandlers
-    layers:
-      - { Ref: UserLibsLambdaLayer}
+    handler: src/handler.routesHandlers
     events:
       - http: 
           path: /post/{proxy+}
           method: ANY
 
-    
+custom:
+  bundle:
+    linting: false
+
+
 package:
-  individually: true 
-  exclude:
-    - ./node_modules
-  include: 
-    - ./
+  individually: false 
 
 plugins:
-  - serverless-plugin-typescript
+  # - serverless-plugin-typescript
+  - serverless-bundle

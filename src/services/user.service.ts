@@ -1,18 +1,34 @@
 import { sign } from "jsonwebtoken";
+import dynamoose from "dynamoose";
 import bcrypt from "bcryptjs";
 import {
   DataStoredInToken,
   TokenData,
   User,
 } from "../interfaces/users.interface";
+import {
+  ExpressionAttributeNameMap,
+  ExpressionAttributeValueMap,
+  UpdateItemInput,
+} from "aws-sdk/clients/dynamodb";
 import { AnyDocument } from "dynamoose/dist/Document";
-import { HttpException } from "../../utils/error.utils";
+import { HttpException } from "../utils/error.utils";
 import cmsModel from "../models/cms.model";
-import { isEmpty } from "../../utils/create.util";
+import { isEmpty } from "../utils/create.util";
 import Generator from "generate-password";
 import { v4 as uuidv4 } from "uuid";
+import { getDynamoExpression } from "../utils/dynamoose.util";
 
 const UserModel = cmsModel[1]
+
+const ddb = new dynamoose.aws.sdk.DynamoDB({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
+});
+// Set DynamoDB instance to the Dynamoose DDB instance
+dynamoose.aws.ddb.set(ddb);
+const ddbClient = dynamoose.aws.ddb();
 
 const saltRounds = 10;
 
@@ -20,10 +36,11 @@ export default class UserService {
   public async logIn(email: string, password: string) {
     const userToFind = await UserModel.scan("Payload.email").eq(email).exec();
     const userInfo = userToFind[0].toJSON().Payload;
+    const userId = userToFind[0].id
     const validPassword = await bcrypt.compare(password, userInfo.password);
     if (validPassword) {
       const tokenData = this.createToken(userToFind[0]);
-      return { tokenData };
+      return { tokenData, userId};
     } else {
       throw new HttpException(401, "Unsucessful login!!");
     }
@@ -79,40 +96,53 @@ export default class UserService {
     }
   }
 
-  //   public async updateUser(id: string, user: User) {
-  //     const exp = getDynamoExpression({
-  //       Payload: {
-  //         email: {
-  //           $value: user.email,
-  //         },
-  //         username: {
-  //           $value: user.username,
-  //         },
-  //         gender: {
-  //           $value: user.gender,
-  //         },
-  //       },
-  //     });
-  //     console.log(exp);
-  //     const params: UpdateItemInput = {
-  //       TableName: process.env.DYNAMODB_TABLE,
-  //       Key: {
-  //         pk: { S: `USER#${id}` },
-  //         sk: { S: `USER_AUTH#${id}` },
-  //       },
-  //       ExpressionAttributeNames:
-  //         exp.ExpressionAttributeNames as ExpressionAttributeNameMap,
-  //       UpdateExpression: exp.UpdateExpression as string,
-  //       ExpressionAttributeValues:
-  //         exp.ExpressionAttributeValues as ExpressionAttributeValueMap,
-  //     };
-  //     console.log(params);
-  //     try {
-  //       const data = await ddbClient.updateItem(params).promise();
-  //       console.log("Success - item added or updated", data);
-  //       return data;
-  //     } catch (err) {
-  //       console.log("Error", err);
-  //     }
-  //   }
+    public async updateUser(id: string, user: User) {
+      const exp = getDynamoExpression({
+        Payload: {
+          email: {
+            $value: user.email,
+          },
+          username: {
+            $value: user.username,
+          },
+          gender: {
+            $value: user.gender,
+          },
+        },
+      });
+      console.log(exp);
+      const params: UpdateItemInput = {
+        TableName: process.env.DYNAMODB_TABLE,
+        Key: {
+          pk: { S: `USER#${id}` },
+          sk: { S: `USER_AUTH#${id}` },
+        },
+        ExpressionAttributeNames:
+          exp.ExpressionAttributeNames as ExpressionAttributeNameMap,
+        UpdateExpression: exp.UpdateExpression as string,
+        ExpressionAttributeValues:
+          exp.ExpressionAttributeValues as ExpressionAttributeValueMap,
+      };
+      console.log(params);
+      try {
+        const data = await ddbClient.updateItem(params).promise();
+        console.log("Success - item added or updated", data);
+        return data;
+      } catch (err) {
+        console.log("Error", err);
+      }
+    }
+
+    public async getOneUser(id: string) {
+      const userFound = UserModel.query(
+        {
+          "pk":"USER#ALL",
+          "sk":`USER#${id}`
+        }
+      ).exec();
+      if ((await userFound).count == 0) {
+        throw new HttpException(404, "Post doesn't exist");
+      }
+      return userFound;
+    }
 }
