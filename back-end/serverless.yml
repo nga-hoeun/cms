@@ -1,0 +1,45 @@
+service: CMS
+frameworkVersion: '3'
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  profile: APIStartUp
+  region: ap-southeast-1
+  iam:
+    role:
+      statements:
+        # Allow functions to list all buckets
+        - Effect: Allow
+          Action: 'dynamodb:*'
+          Resource: '*'
+
+functions:
+  app: 
+    handler: src/handler.routesHandlers
+    events:
+      - http: 
+          path: /{proxy+}
+          method: ANY
+
+  # post: 
+  #   handler: src/handler.routesHandlers
+  #   events:
+  #     - http: 
+  #         path: /post/{proxy+}
+  #         method: ANY
+
+custom:
+  bundle:
+    linting: false
+
+
+package:
+  individually: false 
+
+plugins:
+  # - serverless-plugin-typescript
+  - serverless-dotenv-plugin
+  - serverless-bundle
+  - serverless-offline
