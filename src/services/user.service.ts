@@ -18,7 +18,7 @@ import Generator from "generate-password";
 import { v4 as uuidv4 } from "uuid";
 import { getDynamoExpression } from "../utils/dynamoose.util";
 import { UserModel } from "@/models/cms.model";
-
+import MailController from "../ mail/registerEmail";
 
 const ddb = new dynamoose.aws.sdk.DynamoDB({
   // accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -32,23 +32,28 @@ const ddbClient = dynamoose.aws.ddb();
 const saltRounds = 10;
 
 export default class UserService {
+  public MailController = new MailController();
   public async logIn(email: string, password: string) {
     const userToFind = await UserModel.scan("Payload.email").eq(email).exec();
-    const userInfo = userToFind[0].toJSON().Payload;
-    const userId = userToFind[0].id
-    const validPassword = await bcrypt.compare(password, userInfo.password);
-    if (validPassword) {
-      const tokenData = this.createToken(userToFind[0]);
-      return { tokenData, userId};
+    if (userToFind.count != 0) {
+      const userInfo = userToFind[0].toJSON().Payload;
+      const userId = userToFind[0].id;
+      const validPassword = await bcrypt.compare(password, userInfo.password);
+      if (validPassword) {
+        const tokenData = this.createToken(userToFind[0]);
+        return { tokenData, userId };
+      } else {
+        throw new HttpException(403, "Wrong Password!!");
+      }
     } else {
-      throw new HttpException(401, "Unsucessful login!!");
+      throw new HttpException(403, "Wrong Email Address!!");
     }
   }
 
   public createToken(user: AnyDocument): TokenData {
     const dataStoredInToken: DataStoredInToken = { id: user.id };
     const secretKey: string = process.env.AWS_ACCESS_KEY_ID;
-    const expiresIn: number = 30 * 30;
+    const expiresIn: number = 600 * 600;
 
     return {
       expiresIn,
@@ -61,7 +66,7 @@ export default class UserService {
     const userToFind = await UserModel.scan("Payload.email")
       .eq(user.email)
       .exec();
-    console.log(userToFind)
+    console.log(userToFind);
     if (isEmpty(user)) {
       throw new HttpException(400, "Didn't meet all the required fields");
     } else if (userToFind.count != 0) {
@@ -74,77 +79,80 @@ export default class UserService {
         numbers: true,
         lowercase: true,
       });
-      console.log(password)
+      console.log(password);
       bcrypt.genSalt(saltRounds, (err, salt) => {
         bcrypt.hash(password, salt, (err, hash) => {
           // Store hash in your password DB.
-          UserModel.create({
-            id: userId,
-            pk: `USER#ALL`,
-            sk: `USER#${userId}`,
-            Payload: {
-              username: user.username,
-              email: user.email,
-              gender: user.gender,
-              password: hash,
-              age: user.age,
-            },
-          });
+          try {
+            UserModel.create({
+              id: userId,
+              pk: `USER#ALL`,
+              sk: `USER#${userId}`,
+              Payload: {
+                username: user.username,
+                email: user.email,
+                gender: user.gender,
+                password: hash,
+                age: user.age,
+              },
+            });
+          } catch (error) { 
+            console.log(error)
+          }
         });
       });
+      // this.MailController.sendPassword(user.email, password, user.username);
     }
   }
 
-    public async updateUser(id: string, user: User) {
-      const exp = getDynamoExpression({
-        Payload: {
-          email: {
-            $value: user.email,
-          },
-          username: {
-            $value: user.username,
-          },
-          gender: {
-            $value: user.gender,
-          },
-          age: {
-            $value: user.age,
-          }
+  public async updateUser(id: string, user: User) {
+    const exp = getDynamoExpression({
+      Payload: {
+        email: {
+          $value: user.email,
         },
-      });
-      console.log(exp);
-      const params: UpdateItemInput = {
-        TableName: process.env.DYNAMODB_TABLE,
-        Key: {
-          pk: { S: `USER#ALL` },
-          sk: { S: `USER#${id}` },
+        username: {
+          $value: user.username,
         },
-        ExpressionAttributeNames:
-          exp.ExpressionAttributeNames as ExpressionAttributeNameMap,
-        UpdateExpression: exp.UpdateExpression as string,
-        ExpressionAttributeValues:
-          exp.ExpressionAttributeValues as ExpressionAttributeValueMap,
-      };
-      console.log(params);
-      try {
-        const data = await ddbClient.updateItem(params).promise();
-        console.log("Success - item added or updated", data);
-        return data;
-      } catch (err) {
-        console.log("Error", err);
-      }
+        gender: {
+          $value: user.gender,
+        },
+        age: {
+          $value: user.age,
+        },
+      },
+    });
+    console.log(exp);
+    const params: UpdateItemInput = {
+      TableName: process.env.DYNAMODB_TABLE,
+      Key: {
+        pk: { S: `USER#ALL` },
+        sk: { S: `USER#${id}` },
+      },
+      ExpressionAttributeNames:
+        exp.ExpressionAttributeNames as ExpressionAttributeNameMap,
+      UpdateExpression: exp.UpdateExpression as string,
+      ExpressionAttributeValues:
+        exp.ExpressionAttributeValues as ExpressionAttributeValueMap,
+    };
+    console.log(params);
+    try {
+      const data = await ddbClient.updateItem(params).promise();
+      console.log("Success - item added or updated", data);
+      return data;
+    } catch (err) {
+      console.log("Error", err);
     }
+  }
 
-    public async getOneUser(id: string) {
-      const userFound = UserModel.query(
-        {
-          "pk":"USER#ALL",
-          "sk":`USER#${id}`
-        }
-      ).exec();
-      if ((await userFound).count == 0) {
-        throw new HttpException(404, "Post doesn't exist");
-      }
-      return userFound;
+  public async getOneUser(id: string) {
+    const userFound = UserModel.query({
+      pk: "USER#ALL",
+      sk: `USER#${id}`,
+    }).exec();
+    if ((await userFound).count == 0) {
+      throw new HttpException(404, "Post doesn't exist");
     }
+    return userFound;
+  }
 }

@@ -168,7 +168,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/CMS/dev/1668599662163-2022-11-16T11:54:22.163Z/CMS.zip"
+          "S3Key": "serverless/CMS/dev/1669114346536-2022-11-22T10:52:26.536Z/CMS.zip"
         },
         "Handler": "src/handler.routesHandlers",
         "Runtime": "nodejs14.x",
@@ -178,7 +178,9 @@
         "Environment": {
           "Variables": {
             "DYNAMODB_TABLE": "CMS",
-            "LOG_DIR": "./logs"
+            "LOG_DIR": "./logs",
+            "USER": "slash",
+            "PASS": "vsyakohrymznwcrx"
           }
         },
         "Role": {
@@ -192,14 +194,14 @@
         "AppLogGroup"
       ]
     },
-    "AppLambdaVersionShhynM1pKUzJCNjiXnSm5JsWos8LzcOYVmEIzMzBmps": {
+    "AppLambdaVersionweuSNh50vz6hcOd0H0rLfyStTm2SDx52A9l56ntE": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "AppLambdaFunction"
         },
-        "CodeSha256": "I3wQadlH22awxPZYrb7OePRXBxpF3h19ZvDjDwzqDnw="
+        "CodeSha256": "DK9GH2Gi4VkP+Neg/IQ82kOT6A1KBMBxNdMZPq94yOs="
       }
     },
     "ApiGatewayRestApi": {
@@ -275,7 +277,7 @@
         "AppLambdaPermissionApiGateway"
       ]
     },
-    "ApiGatewayDeployment1668599649511": {
+    "ApiGatewayDeployment1669114333315": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -337,7 +339,7 @@
     "AppLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "AppLambdaVersionShhynM1pKUzJCNjiXnSm5JsWos8LzcOYVmEIzMzBmps"
+        "Ref": "AppLambdaVersionweuSNh50vz6hcOd0H0rLfyStTm2SDx52A9l56ntE"
       },
       "Export": {
         "Name": "sls-CMS-dev-AppLambdaFunctionQualifiedArn"

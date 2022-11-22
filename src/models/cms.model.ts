@@ -46,6 +46,7 @@ export const postSchema = new dynamoose.Schema({
     Payload: {
       type: Object,
       schema: {
+        category:String,
         title: String,
         content:String
       },

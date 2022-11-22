@@ -1,6 +1,7 @@
 import { Router } from "express";
 import UserController from '../controllers/user.controller'
 import { Routes } from "../interfaces/routes.interface";
+import authMiddleware from "@/middlewares/auth.middleware";
 
 export default class UserRoutes implements Routes{
     public path = "/user";
@@ -14,8 +15,8 @@ export default class UserRoutes implements Routes{
     private initializeRoutes(){
         this.router.post(`${this.path}/signUp`, this.userController.signUp);
         this.router.post(`${this.path}/logIn`, this.userController.logIn);
-        this.router.get(`${this.path}/:id`, this.userController.getOneUser);
-        this.router.put(`${this.path}/:id`, this.userController.updateOneUser);
+        this.router.get(`${this.path}/:id`,authMiddleware, this.userController.getOneUser);
+        this.router.put(`${this.path}/:id`,authMiddleware, this.userController.updateOneUser);
 
     }
 }

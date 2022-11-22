@@ -6,6 +6,7 @@ export default class PostController{
         try{
             // console.log(req.body)
             await this.postService.createPost({
+                category:req.body.category,
                 title: req.body.title,
                 content: req.body.content,
             })
@@ -35,6 +36,17 @@ export default class PostController{
         }        
     }
 
+    public getPostByCategory  = async (req:Request, res:Response, next: NextFunction)=>{
+        const category = req.params.category
+        try{
+            const allPost = await this.postService.getPostByCategory(category);
+            console.log(allPost)
+            res.status(200).json({"Post":allPost})
+        }catch(err) {
+            next(err)
+        }        
+    }
+
     public deleteOnePost = async (req:Request, res:Response, next:NextFunction)=>{
         const postId = req.params.id
         try{
@@ -51,6 +63,7 @@ export default class PostController{
             await this.postService.updateOnePost(
                 postId,
                 {
+                    category:req.body.category,
                     title:req.body.title,
                     content:req.body.content
                 }

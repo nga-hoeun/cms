@@ -26,6 +26,7 @@ export default class PostService {
       pk: `POST#All`,
       sk: `POST#${postId}`,
       Payload: {
+        category:post.category,
         title:post.title,
         content:post.content
       },
@@ -48,9 +49,21 @@ export default class PostService {
     return postFound;
   }
 
+  public async getPostByCategory(category: string){
+    const postsFound = await PostModel.query(new dynamoose.Condition().where("pk").eq("POST#All").where("Payload.category").eq(category)).exec();
+    console.log(postsFound)
+    if (postsFound.count == 0) {
+      throw new HttpException(404, "Posts not found!");
+    }
+    return postsFound;
+  }
+
   public async updateOnePost(id: string, post: Post) {
     const exp = getDynamoExpression({
       Payload: {
+        category:{
+          $value:post.category,
+        },
         title: {
           $value: post.title,
         },

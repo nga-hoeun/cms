@@ -13,10 +13,11 @@ export default class PostRoutes implements Routes{
     }
 
     private initializeRoutes(){
-        this.router.post(`${this.path}/`, this.postController.constructPost);
-        this.router.get(`${this.path}/`, this.postController.getAllPost);
-        this.router.get(`${this.path}/:id`, this.postController.getOnePost);
-        this.router.put(`${this.path}/:id`, this.postController.updateOnePost);
-        this.router.delete(`${this.path}/:id`, this.postController.deleteOnePost);
+        this.router.post(`${this.path}/`,authMiddleware, this.postController.constructPost);
+        this.router.get(`${this.path}/`,authMiddleware, this.postController.getAllPost);
+        this.router.get(`${this.path}/:id`,authMiddleware, this.postController.getOnePost);
+        this.router.get(`${this.path}/category/:category`, this.postController.getPostByCategory);
+        this.router.put(`${this.path}/:id`,authMiddleware, this.postController.updateOnePost);
+        this.router.delete(`${this.path}/:id`,authMiddleware, this.postController.deleteOnePost);
     }
 }

@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from "express";
-import { UserLogin } from "../interfaces/userLogin.interface";
 import UserService from "../services/user.service";
 
 export default class UserController {
@@ -25,7 +24,6 @@ export default class UserController {
           req.body.password
         );
         res.status(200).json({ data: tokenData, message: "login", id:userId });
-      //  res.send({Message:"Hello World"})
       } catch (error) {
         next(error);
       }
