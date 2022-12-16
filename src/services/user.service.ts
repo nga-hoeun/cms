@@ -19,6 +19,7 @@ import { v4 as uuidv4 } from "uuid";
 import { getDynamoExpression } from "../utils/dynamoose.util";
 import { UserModel } from "@/models/cms.model";
 import MailController from "../ mail/registerEmail";
+import { ParsedQs } from "qs";
 
 const ddb = new dynamoose.aws.sdk.DynamoDB({
   // accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -37,11 +38,12 @@ export default class UserService {
     const userToFind = await UserModel.scan("Payload.email").eq(email).exec();
     if (userToFind.count != 0) {
       const userInfo = userToFind[0].toJSON().Payload;
+      const userRole = userInfo.role
       const userId = userToFind[0].id;
       const validPassword = await bcrypt.compare(password, userInfo.password);
       if (validPassword) {
         const tokenData = this.createToken(userToFind[0]);
-        return { tokenData, userId };
+        return { tokenData, userId, userRole };
       } else {
         throw new HttpException(403, "Wrong Password!!");
       }
@@ -151,8 +153,109 @@ export default class UserService {
       sk: `USER#${id}`,
     }).exec();
     if ((await userFound).count == 0) {
-      throw new HttpException(404, "Post doesn't exist");
+      throw new HttpException(404, "User doesn't exist");
     }
     return userFound;
+  }
+  public async filterUser(id: string,gender: string | ParsedQs | string[] | ParsedQs[], name: string | ParsedQs | string[] | ParsedQs[], age: string | ParsedQs | string[] | ParsedQs[]){
+    var userFound = []
+    const listUser = await this.getListUser(id)
+    console.log(gender, name, age)
+    
+    if(gender == "" && age=="" && name==""){
+      userFound = await UserModel.query({
+        'pk':"USER#ALL",
+      }).exec();
+    }else if(gender == "" && age == ""){
+      listUser.forEach(user=>{
+        if(user.Payload.username == name){
+          userFound.push(user)
+        }
+      })
+    }else if(gender == ""&& name == ""){
+      listUser.forEach(user=>{
+        if(user.Payload.age == age){
+          userFound.push(user)
+        }
+      })
+    }else if(name == "" && age == ""){
+      listUser.forEach(user=>{
+        if(user.Payload.gender == gender){
+          userFound.push(user)
+        }
+      })
+    }else if(gender == ""){
+      listUser.forEach(user=>{
+        if(user.Payload.age == age && user.Payload.username == name){
+          userFound.push(user)
+        }
+      })
+    }else if(age == ""){
+      listUser.forEach(user=>{
+        if(user.Payload.gender == age && user.Payload.username == name){
+          userFound.push(user)
+        }
+      })
+    }else if(name == ""){
+      listUser.forEach(user=>{
+        if(user.Payload.age == age && user.Payload.gender == gender){
+          userFound.push(user)
+        }
+      })
+    }else{
+      listUser.forEach(user=>{
+        if(user.Payload.age == age && user.Payload.username == name && user.Payload.gender == gender){
+          userFound.push(user)
+        }
+      })
+    }
+    //   userFound = await UserModel.query(new dynamoose.Condition().where("pk").eq("USER#ALL").where("sk").not().eq(`USER#${id}`).where("Payload.username").eq(name)).exec();
+    // }else if(gender == ""&& name == ""){
+    //   userFound = await UserModel.query(new dynamoose.Condition().where("pk").eq("USER#ALL").where("Payload.email").eq(email)).exec();
+    // }else if(name == "" && email == ""){
+    //   userFound = await UserModel.query(new dynamoose.Condition().where("pk").eq("USER#ALL").where("Payload.gender").eq(gender)).exec();
+    // }else if(gender == ""){
+    //   userFound = await UserModel.query(new dynamoose.Condition().where("pk").eq("USER#ALL").where("Payload.username").eq(name).where("Payload.email").eq(email)).exec();
+    // }else if(email == ""){
+    //   userFound = await UserModel.query(new dynamoose.Condition().where("pk").eq("USER#ALL").where("Payload.username").eq(name).where("Payload.gender").eq(gender)).exec();
+    // }else if(name == ""){
+    //   userFound = await UserModel.query(new dynamoose.Condition().where("pk").eq("USER#ALL").where("Payload.gender").eq(gender).where("Payload.email").eq(email)).exec();
+    // }else{
+    //   userFound = await UserModel.query(new dynamoose.Condition().where("pk").eq("USER#ALL").where("Payload.username").eq(name).where("Payload.email").eq(email).where("Payload.gender").eq(gender)).exec();
+    // }
+    console.log(userFound)
+    return userFound
+  }
+
+  public async getListUser(id: string){
+    console.log(id)
+    const usersToFind = []
+    const users = await UserModel.query({
+      pk:"USER#ALL",
+    }).exec();
+    users.toJSON().forEach((user: { id: string; }) => {
+      if(user.id != id){
+        usersToFind.push(user)
+      }
+    });
+    if (users.count == 0) {
+      throw new HttpException(404, "Users not found!");
+    }
+    return usersToFind;
+  }
+
+  public async deleteOneUser(id: string) {
+    console.log(id)
+    const postFound = await UserModel.query(
+      {
+        "pk":"USER#ALL",
+        "sk":`USER#${id}`
+      }
+    ).exec();
+    console.log(postFound)
+    if (postFound.count == 0) {
+      throw new HttpException(404, "User doesn't exist");
+    }
+    await UserModel.delete({ pk: `USER#ALL`, sk: `USER#${id}` });
   }
 }

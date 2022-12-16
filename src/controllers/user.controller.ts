@@ -1,3 +1,4 @@
+import { ResolverQueryLogConfigStatus } from "aws-sdk/clients/route53resolver";
 import { NextFunction, Request, Response } from "express";
 import UserService from "../services/user.service";
 
@@ -19,11 +20,11 @@ export default class UserController {
     public logIn = async (req: Request, res: Response, next: NextFunction) => {
       try {
         console.log(req.body)
-        const { tokenData, userId } = await this.userService.logIn(
+        const { tokenData, userId, userRole } = await this.userService.logIn(
           req.body.email,
           req.body.password
         );
-        res.status(200).json({ data: tokenData, message: "login", id:userId });
+        res.status(200).json({ data: tokenData, message: "login", id:userId, role:userRole });
       } catch (error) {
         next(error);
       }
@@ -46,6 +47,19 @@ export default class UserController {
           next(error)
       }
     }
+    public filterUser = async (req:Request, res:Response, next:NextFunction)=>{
+      const id = req.params.id
+      const gender = req.query.gender;
+      const name = req.query.username;
+      const age = req.query.age;
+      console.log({gender:gender, name:name, age:age})
+      try{
+        const users = await this.userService.filterUser(id,gender, name, age);
+        res.status(200).json({users})
+      }catch(err){
+        next(err)
+      }
+    }
 
     public getOneUser  = async (req:Request, res:Response, next: NextFunction)=>{
       const userId = req.params.id
@@ -57,4 +71,24 @@ export default class UserController {
           next(err)
       }        
   }
+  public getListUser = async (req:Request, res:Response, next: NextFunction)=>{
+    const userId = req.params.id
+    try{
+        const users = await this.userService.getListUser(userId);
+        res.status(200).json({"User":users})
+    }catch(err) {
+        next(err)
+    }        
+  }
+
+  public deleteOneUser = async (req:Request, res:Response, next:NextFunction)=>{
+    const userId = req.params.id
+    try{
+        const deleteUser = await this.userService.deleteOneUser(userId);
+        res.status(201).json({"Response":"User Has Been Deleted"})
+    }catch(err){
+        next(err)
+    }
+}
+
 }

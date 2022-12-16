@@ -29,7 +29,9 @@ export const userSchema = new dynamoose.Schema({
       email: String,
       gender: String,
       password: String,
-      age:Number
+      age:Number,
+      role:String,
+      image:String
     },
   },
 });
@@ -48,7 +50,27 @@ export const postSchema = new dynamoose.Schema({
       schema: {
         category:String,
         title: String,
-        content:String
+        content:String,
+        image:String
+      },
+    },
+  });
+
+export const categorySchema = new dynamoose.Schema({
+    id: String,
+    pk: {
+      hashKey: true,
+      type: String,
+    },
+    sk: {
+      type: String,
+      rangeKey: true,
+    },
+    Payload: {
+      type: Object,
+      schema: {
+        name:String,
+        icon:String
       },
     },
   });
@@ -60,6 +82,12 @@ export const PostModel = dynamoose.model(process.env.DYNAMODB_TABLE, postSchema,
 });
 
 export const UserModel = dynamoose.model(process.env.DYNAMODB_TABLE, userSchema,{
+  throughput: "ON_DEMAND",
+  create: false,
+  waitForActive: false,
+});
+
+export const CategoryModel = dynamoose.model(process.env.DYNAMODB_TABLE, categorySchema,{
   throughput: "ON_DEMAND",
   create: false,
   waitForActive: false,

@@ -9,6 +9,7 @@ import { HttpException } from "../utils/error.utils";
 import { v4 as uuidv4 } from "uuid";
 import { Post } from "../interfaces/posts.interface";
 import { PostModel } from "@/models/cms.model";
+import { ParsedQs } from "qs";
 
 const ddb = new dynamoose.aws.sdk.DynamoDB({
   // accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -28,7 +29,8 @@ export default class PostService {
       Payload: {
         category:post.category,
         title:post.title,
-        content:post.content
+        content:post.content,
+        image:post.image
       },
     });
   }
@@ -49,11 +51,18 @@ export default class PostService {
     return postFound;
   }
 
-  public async getPostByCategory(category: string){
-    const postsFound = await PostModel.query(new dynamoose.Condition().where("pk").eq("POST#All").where("Payload.category").eq(category)).exec();
-    console.log(postsFound)
-    if (postsFound.count == 0) {
-      throw new HttpException(404, "Posts not found!");
+  public async filterPost(category: string | ParsedQs | string[] | ParsedQs[], title: string | ParsedQs | string[] | ParsedQs[]){
+    var postsFound=[]
+    if(category=="" && title==""){
+      postsFound = await PostModel.query({
+        'pk':"POST#All"
+      }).exec()
+    }else if(title==""){
+      postsFound = await PostModel.query(new dynamoose.Condition().where("pk").eq("POST#All").where("Payload.category").eq(category)).exec();
+    }else if(category==""){
+      postsFound = await PostModel.query(new dynamoose.Condition().where("pk").eq("POST#All").where("Payload.title").eq(title)).exec();
+    }else{
+      postsFound = await PostModel.query(new dynamoose.Condition().where("pk").eq("POST#All").where("Payload.title").eq(title).and().where("Payload.category").eq(category)).exec();
     }
     return postsFound;
   }
@@ -70,6 +79,9 @@ export default class PostService {
         content: {
           $value: post.content,
         },
+        image:{
+          $value:post.image
+        }
       },
     });
     console.log(exp);

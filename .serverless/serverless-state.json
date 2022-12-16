@@ -18,6 +18,13 @@
                 "dynamodb:*"
               ],
               "Resource": "*"
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:*"
+              ],
+              "Resource": "*"
             }
           ]
         }
@@ -28,7 +35,11 @@
         "DYNAMODB_TABLE": "CMS",
         "LOG_DIR": "./logs",
         "USER": "slash",
-        "PASS": "vsyakohrymznwcrx"
+        "PASS": "vsyakohrymznwcrx",
+        "ACCESS_KEY": "AKIASQUBARMJ2QZE5UQD",
+        "SECRET_ACCESS_KEY": "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",
+        "BUCKET_NAME": "store-files-img",
+        "BUCKET_REGION": "ap-southeast-1"
       },
       "compiledCloudFormationTemplate": {
         "AWSTemplateFormatVersion": "2010-09-09",
@@ -168,6 +179,9 @@
                       },
                       {
                         "$ref": "$[\"service\"][\"provider\"][\"iam\"][\"role\"][\"statements\"][0]"
+                      },
+                      {
+                        "$ref": "$[\"service\"][\"provider\"][\"iam\"][\"role\"][\"statements\"][1]"
                       }
                     ]
                   }
@@ -196,7 +210,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/CMS/dev/1669114346536-2022-11-22T10:52:26.536Z/CMS.zip"
+                "S3Key": "serverless/CMS/dev/1671159265928-2022-12-16T02:54:25.928Z/CMS.zip"
               },
               "Handler": "src/handler.routesHandlers",
               "Runtime": "nodejs14.x",
@@ -208,7 +222,11 @@
                   "DYNAMODB_TABLE": "CMS",
                   "LOG_DIR": "./logs",
                   "USER": "slash",
-                  "PASS": "vsyakohrymznwcrx"
+                  "PASS": "vsyakohrymznwcrx",
+                  "ACCESS_KEY": "AKIASQUBARMJ2QZE5UQD",
+                  "SECRET_ACCESS_KEY": "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",
+                  "BUCKET_NAME": "store-files-img",
+                  "BUCKET_REGION": "ap-southeast-1"
                 }
               },
               "Role": {
@@ -222,14 +240,14 @@
               "AppLogGroup"
             ]
           },
-          "AppLambdaVersionweuSNh50vz6hcOd0H0rLfyStTm2SDx52A9l56ntE": {
+          "AppLambdaVersionsmqYlVzBNtkdJwJhWeW02fIzFWxs7sAqa5Dbsp4UM": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "AppLambdaFunction"
               },
-              "CodeSha256": "DK9GH2Gi4VkP+Neg/IQ82kOT6A1KBMBxNdMZPq94yOs="
+              "CodeSha256": "V7zlyAOuY3J1R0C9+Cw5o5kuOscDY9zZz2Y5m0R1Qoo="
             }
           },
           "ApiGatewayRestApi": {
@@ -305,7 +323,7 @@
               "AppLambdaPermissionApiGateway"
             ]
           },
-          "ApiGatewayDeployment1669114333315": {
+          "ApiGatewayDeployment1671159248317": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -367,7 +385,7 @@
           "AppLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "AppLambdaVersionweuSNh50vz6hcOd0H0rLfyStTm2SDx52A9l56ntE"
+              "Ref": "AppLambdaVersionsmqYlVzBNtkdJwJhWeW02fIzFWxs7sAqa5Dbsp4UM"
             },
             "Export": {
               "Name": "sls-CMS-dev-AppLambdaFunctionQualifiedArn"
@@ -531,7 +549,7 @@
         "timeout": 6,
         "runtime": "nodejs14.x",
         "vpc": {},
-        "versionLogicalId": "AppLambdaVersionweuSNh50vz6hcOd0H0rLfyStTm2SDx52A9l56ntE"
+        "versionLogicalId": "AppLambdaVersionsmqYlVzBNtkdJwJhWeW02fIzFWxs7sAqa5Dbsp4UM"
       }
     },
     "configValidationMode": "warn",
@@ -552,7 +570,7 @@
       "package": {
         "individually": false,
         "artifactsS3KeyDirname": "serverless/CMS/dev/code-artifacts",
-        "artifactDirectoryName": "serverless/CMS/dev/1669114346536-2022-11-22T10:52:26.536Z"
+        "artifactDirectoryName": "serverless/CMS/dev/1671159265928-2022-12-16T02:54:25.928Z"
       },
       "plugins": {
         "$ref": "$[\"service\"][\"plugins\"]"
@@ -563,7 +581,7 @@
   },
   "package": {
     "individually": false,
-    "artifactDirectoryName": "serverless/CMS/dev/1669114346536-2022-11-22T10:52:26.536Z",
+    "artifactDirectoryName": "serverless/CMS/dev/1671159265928-2022-12-16T02:54:25.928Z",
     "artifact": ""
   }
 }
