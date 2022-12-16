@@ -20,17 +20,17 @@ const ddb = new dynamoose.aws.sdk.DynamoDB({
 dynamoose.aws.ddb.set(ddb);
 const ddbClient = dynamoose.aws.ddb();
 export default class PostService {
-  public async createPost(post:Post){
+  public async createPost(post: Post) {
     const postId = uuidv4();
     PostModel.create({
       id: postId,
       pk: `POST#All`,
       sk: `POST#${postId}`,
       Payload: {
-        category:post.category,
-        title:post.title,
-        content:post.content,
-        image:post.image
+        category: post.category,
+        title: post.title,
+        content: post.content,
+        image: post.image,
       },
     });
   }
@@ -39,30 +39,52 @@ export default class PostService {
   }
 
   public async getOnePost(id: string) {
-    const postFound = PostModel.query(
-      {
-        "pk":"POST#All",
-        "sk":`POST#${id}`
-      }
-    ).exec();
+    const postFound = PostModel.query({
+      pk: "POST#All",
+      sk: `POST#${id}`,
+    }).exec();
     if ((await postFound).count == 0) {
       throw new HttpException(404, "Post doesn't exist");
     }
     return postFound;
   }
 
-  public async filterPost(category: string | ParsedQs | string[] | ParsedQs[], title: string | ParsedQs | string[] | ParsedQs[]){
-    var postsFound=[]
-    if(category=="" && title==""){
+  public async filterPost(
+    category: string | ParsedQs | string[] | ParsedQs[],
+    title: string | ParsedQs | string[] | ParsedQs[]
+  ) {
+    var postsFound = [];
+    if (category == "" && title == "") {
       postsFound = await PostModel.query({
-        'pk':"POST#All"
-      }).exec()
-    }else if(title==""){
-      postsFound = await PostModel.query(new dynamoose.Condition().where("pk").eq("POST#All").where("Payload.category").eq(category)).exec();
-    }else if(category==""){
-      postsFound = await PostModel.query(new dynamoose.Condition().where("pk").eq("POST#All").where("Payload.title").eq(title)).exec();
-    }else{
-      postsFound = await PostModel.query(new dynamoose.Condition().where("pk").eq("POST#All").where("Payload.title").eq(title).and().where("Payload.category").eq(category)).exec();
+        pk: "POST#All",
+      }).exec();
+    } else if (title == "") {
+      postsFound = await PostModel.query(
+        new dynamoose.Condition()
+          .where("pk")
+          .eq("POST#All")
+          .where("Payload.category")
+          .eq(category)
+      ).exec();
+    } else if (category == "") {
+      postsFound = await PostModel.query(
+        new dynamoose.Condition()
+          .where("pk")
+          .eq("POST#All")
+          .where("Payload.title")
+          .eq(title)
+      ).exec();
+    } else {
+      postsFound = await PostModel.query(
+        new dynamoose.Condition()
+          .where("pk")
+          .eq("POST#All")
+          .where("Payload.title")
+          .eq(title)
+          .and()
+          .where("Payload.category")
+          .eq(category)
+      ).exec();
     }
     return postsFound;
   }
@@ -70,8 +92,8 @@ export default class PostService {
   public async updateOnePost(id: string, post: Post) {
     const exp = getDynamoExpression({
       Payload: {
-        category:{
-          $value:post.category,
+        category: {
+          $value: post.category,
         },
         title: {
           $value: post.title,
@@ -79,9 +101,9 @@ export default class PostService {
         content: {
           $value: post.content,
         },
-        image:{
-          $value:post.image
-        }
+        image: {
+          $value: post.image,
+        },
       },
     });
     console.log(exp);
@@ -107,14 +129,12 @@ export default class PostService {
   }
 
   public async deleteOnePost(id: string) {
-    console.log(id)
-    const postFound = await PostModel.query(
-      {
-        "pk":"POST#All",
-        "sk":`POST#${id}`
-      }
-    ).exec();
-    console.log(postFound)
+    console.log(id);
+    const postFound = await PostModel.query({
+      pk: "POST#All",
+      sk: `POST#${id}`,
+    }).exec();
+    console.log(postFound);
     if (postFound.count == 0) {
       throw new HttpException(404, "Post doesn't exist");
     }
