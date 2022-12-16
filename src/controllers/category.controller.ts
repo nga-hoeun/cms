@@ -1,6 +1,6 @@
 import {Response, Request, NextFunction} from "express"
 import CategoryService from "../services/category.service"
-import { PutObjectCommand, S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
+import { PutObjectCommand, S3Client, GetObjectCommand, PutObjectCommandInput } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import AWS from "aws-sdk";
 
@@ -26,12 +26,14 @@ export default class CategoryController{
             console.log(req.file)
             const imageName = req.file.originalname
             const imagePath = "category/"+imageName
-            const params = {
-                Bucket:bucketName,
-                Key:imagePath,
-                Body:req.file.buffer,
-                ContentType:req.file.mimetype
-            }
+            const params: PutObjectCommandInput = {
+                ACL: "public-read",
+                ContentEncoding: "base64",
+                Bucket: bucketName,
+                Key: imagePath,
+                Body: req.file.buffer,
+                ContentType: req.file.mimetype,
+              };
             const command = new PutObjectCommand(params)
             await s3.send(command)
             await this.categoryService.createCategory({
@@ -47,13 +49,22 @@ export default class CategoryController{
         try{
             const categories = await this.categoryService.getAllCategory()
             for(const category of categories){
-                const s3 = new AWS.S3();
-                const params = {Bucket: bucketName, Key: category.Payload.icon}
-                const response = await s3.getObject(params).promise()
-                const fileContent = response.Body.toString('utf-8');
-                console.log(fileContent)
-                category.Payload.icon = fileContent
+                const getObjectParams = {
+                    Bucket:bucketName,
+                    Key:category.Payload.icon
+                }
+                const command = new GetObjectCommand(getObjectParams);
+                const url = await getSignedUrl(s3, command);
+                category.Payload.icon = url
             }
+            // for(const category of categories){
+            //     const s3 = new AWS.S3();
+            //     const params = {Bucket: bucketName, Key: category.Payload.icon}
+            //     const response = await s3.getObject(params).promise()
+            //     const fileContent = response.Body.toString('utf-8');
+            //     console.log(fileContent)
+            //     category.Payload.icon = fileContent
+            // }
             console.log(categories)
             res.status(200).json({"Data":categories})
         }catch(error){

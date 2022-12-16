@@ -210,7 +210,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/CMS/dev/1671159265928-2022-12-16T02:54:25.928Z/CMS.zip"
+                "S3Key": "serverless/CMS/dev/1671175283563-2022-12-16T07:21:23.563Z/CMS.zip"
               },
               "Handler": "src/handler.routesHandlers",
               "Runtime": "nodejs14.x",
@@ -240,14 +240,14 @@
               "AppLogGroup"
             ]
           },
-          "AppLambdaVersionsmqYlVzBNtkdJwJhWeW02fIzFWxs7sAqa5Dbsp4UM": {
+          "AppLambdaVersionXrb3F1ZUSiNkuYBoY2oi8fwHl5CPpJWJOcLkqWzBP8": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "AppLambdaFunction"
               },
-              "CodeSha256": "V7zlyAOuY3J1R0C9+Cw5o5kuOscDY9zZz2Y5m0R1Qoo="
+              "CodeSha256": "GndKi1+1xN8aKbtOwVt5ONik6YJLEv6tiXAxwilLV9g="
             }
           },
           "ApiGatewayRestApi": {
@@ -323,7 +323,7 @@
               "AppLambdaPermissionApiGateway"
             ]
           },
-          "ApiGatewayDeployment1671159248317": {
+          "ApiGatewayDeployment1671175262936": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -385,7 +385,7 @@
           "AppLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "AppLambdaVersionsmqYlVzBNtkdJwJhWeW02fIzFWxs7sAqa5Dbsp4UM"
+              "Ref": "AppLambdaVersionXrb3F1ZUSiNkuYBoY2oi8fwHl5CPpJWJOcLkqWzBP8"
             },
             "Export": {
               "Name": "sls-CMS-dev-AppLambdaFunctionQualifiedArn"
@@ -549,7 +549,7 @@
         "timeout": 6,
         "runtime": "nodejs14.x",
         "vpc": {},
-        "versionLogicalId": "AppLambdaVersionsmqYlVzBNtkdJwJhWeW02fIzFWxs7sAqa5Dbsp4UM"
+        "versionLogicalId": "AppLambdaVersionXrb3F1ZUSiNkuYBoY2oi8fwHl5CPpJWJOcLkqWzBP8"
       }
     },
     "configValidationMode": "warn",
@@ -570,7 +570,7 @@
       "package": {
         "individually": false,
         "artifactsS3KeyDirname": "serverless/CMS/dev/code-artifacts",
-        "artifactDirectoryName": "serverless/CMS/dev/1671159265928-2022-12-16T02:54:25.928Z"
+        "artifactDirectoryName": "serverless/CMS/dev/1671175283563-2022-12-16T07:21:23.563Z"
       },
       "plugins": {
         "$ref": "$[\"service\"][\"plugins\"]"
@@ -581,7 +581,7 @@
   },
   "package": {
     "individually": false,
-    "artifactDirectoryName": "serverless/CMS/dev/1671159265928-2022-12-16T02:54:25.928Z",
+    "artifactDirectoryName": "serverless/CMS/dev/1671175283563-2022-12-16T07:21:23.563Z",
     "artifact": ""
   }
 }
