@@ -38,7 +38,7 @@ export default class UserService {
     const userToFind = await UserModel.scan("Payload.email").eq(email).exec();
     if (userToFind.count != 0) {
       const userInfo = userToFind[0].toJSON().Payload;
-      const userRole = userInfo.role
+      const userRole = userInfo.role;
       const userId = userToFind[0].id;
       const validPassword = await bcrypt.compare(password, userInfo.password);
       if (validPassword) {
@@ -99,8 +99,8 @@ export default class UserService {
                 profile:user.profile
               },
             });
-          } catch (error) { 
-            console.log(error)
+          } catch (error) {
+            console.log(error);
           }
         });
       });
@@ -161,57 +161,66 @@ export default class UserService {
     }
     return userFound;
   }
-  public async filterUser(id: string,gender: string | ParsedQs | string[] | ParsedQs[], name: string | ParsedQs | string[] | ParsedQs[], age: string | ParsedQs | string[] | ParsedQs[]){
-    var userFound = []
-    const listUser = await this.getListUser(id)
-    console.log(gender, name, age)
-    
-    if(gender == "" && age=="" && name==""){
+  public async filterUser(
+    id: string,
+    gender: string | ParsedQs | string[] | ParsedQs[],
+    name: string | ParsedQs | string[] | ParsedQs[],
+    age: string | ParsedQs | string[] | ParsedQs[]
+  ) {
+    var userFound = [];
+    const listUser = await this.getListUser(id);
+    console.log(gender, name, age);
+
+    if (gender == "" && age == "" && name == "") {
       userFound = await UserModel.query({
-        'pk':"USER#ALL",
+        pk: "USER#ALL",
       }).exec();
-    }else if(gender == "" && age == ""){
-      listUser.forEach(user=>{
-        if(user.Payload.username == name){
-          userFound.push(user)
+    } else if (gender == "" && age == "") {
+      listUser.forEach((user) => {
+        if (user.Payload.username == name) {
+          userFound.push(user);
         }
-      })
-    }else if(gender == ""&& name == ""){
-      listUser.forEach(user=>{
-        if(user.Payload.age == age){
-          userFound.push(user)
+      });
+    } else if (gender == "" && name == "") {
+      listUser.forEach((user) => {
+        if (user.Payload.age == age) {
+          userFound.push(user);
         }
-      })
-    }else if(name == "" && age == ""){
-      listUser.forEach(user=>{
-        if(user.Payload.gender == gender){
-          userFound.push(user)
+      });
+    } else if (name == "" && age == "") {
+      listUser.forEach((user) => {
+        if (user.Payload.gender == gender) {
+          userFound.push(user);
         }
-      })
-    }else if(gender == ""){
-      listUser.forEach(user=>{
-        if(user.Payload.age == age && user.Payload.username == name){
-          userFound.push(user)
+      });
+    } else if (gender == "") {
+      listUser.forEach((user) => {
+        if (user.Payload.age == age && user.Payload.username == name) {
+          userFound.push(user);
         }
-      })
-    }else if(age == ""){
-      listUser.forEach(user=>{
-        if(user.Payload.gender == age && user.Payload.username == name){
-          userFound.push(user)
+      });
+    } else if (age == "") {
+      listUser.forEach((user) => {
+        if (user.Payload.gender == age && user.Payload.username == name) {
+          userFound.push(user);
         }
-      })
-    }else if(name == ""){
-      listUser.forEach(user=>{
-        if(user.Payload.age == age && user.Payload.gender == gender){
-          userFound.push(user)
+      });
+    } else if (name == "") {
+      listUser.forEach((user) => {
+        if (user.Payload.age == age && user.Payload.gender == gender) {
+          userFound.push(user);
         }
-      })
-    }else{
-      listUser.forEach(user=>{
-        if(user.Payload.age == age && user.Payload.username == name && user.Payload.gender == gender){
-          userFound.push(user)
+      });
+    } else {
+      listUser.forEach((user) => {
+        if (
+          user.Payload.age == age &&
+          user.Payload.username == name &&
+          user.Payload.gender == gender
+        ) {
+          userFound.push(user);
         }
-      })
+      });
     }
     //   userFound = await UserModel.query(new dynamoose.Condition().where("pk").eq("USER#ALL").where("sk").not().eq(`USER#${id}`).where("Payload.username").eq(name)).exec();
     // }else if(gender == ""&& name == ""){
@@ -227,19 +236,19 @@ export default class UserService {
     // }else{
     //   userFound = await UserModel.query(new dynamoose.Condition().where("pk").eq("USER#ALL").where("Payload.username").eq(name).where("Payload.email").eq(email).where("Payload.gender").eq(gender)).exec();
     // }
-    console.log(userFound)
-    return userFound
+    console.log(userFound);
+    return userFound;
   }
 
-  public async getListUser(id: string){
-    console.log(id)
-    const usersToFind = []
+  public async getListUser(id: string) {
+    console.log(id);
+    const usersToFind = [];
     const users = await UserModel.query({
-      pk:"USER#ALL",
+      pk: "USER#ALL",
     }).exec();
-    users.toJSON().forEach((user: { id: string; }) => {
-      if(user.id != id){
-        usersToFind.push(user)
+    users.toJSON().forEach((user: { id: string }) => {
+      if (user.id != id) {
+        usersToFind.push(user);
       }
     });
     if (users.count == 0) {
@@ -249,14 +258,12 @@ export default class UserService {
   }
 
   public async deleteOneUser(id: string) {
-    console.log(id)
-    const postFound = await UserModel.query(
-      {
-        "pk":"USER#ALL",
-        "sk":`USER#${id}`
-      }
-    ).exec();
-    console.log(postFound)
+    console.log(id);
+    const postFound = await UserModel.query({
+      pk: "USER#ALL",
+      sk: `USER#${id}`,
+    }).exec();
+    console.log(postFound);
     if (postFound.count == 0) {
       throw new HttpException(404, "User doesn't exist");
     }
