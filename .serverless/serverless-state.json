@@ -36,8 +36,8 @@
         "LOG_DIR": "./logs",
         "USER": "slash",
         "PASS": "vsyakohrymznwcrx",
-        "ACCESS_KEY": "AKIASQUBARMJ2QZE5UQD",
-        "SECRET_ACCESS_KEY": "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",
+        "ACCESS_KEY": "AKIASQUBARMJQRTOOVN2",
+        "SECRET_ACCESS_KEY": "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",
         "BUCKET_NAME": "store-files-img",
         "BUCKET_REGION": "ap-southeast-1"
       },
@@ -210,7 +210,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/CMS/dev/1671175283563-2022-12-16T07:21:23.563Z/CMS.zip"
+                "S3Key": "serverless/CMS/dev/1671418869724-2022-12-19T03:01:09.724Z/CMS.zip"
               },
               "Handler": "src/handler.routesHandlers",
               "Runtime": "nodejs14.x",
@@ -223,8 +223,8 @@
                   "LOG_DIR": "./logs",
                   "USER": "slash",
                   "PASS": "vsyakohrymznwcrx",
-                  "ACCESS_KEY": "AKIASQUBARMJ2QZE5UQD",
-                  "SECRET_ACCESS_KEY": "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",
+                  "ACCESS_KEY": "AKIASQUBARMJQRTOOVN2",
+                  "SECRET_ACCESS_KEY": "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",
                   "BUCKET_NAME": "store-files-img",
                   "BUCKET_REGION": "ap-southeast-1"
                 }
@@ -240,14 +240,14 @@
               "AppLogGroup"
             ]
           },
-          "AppLambdaVersionXrb3F1ZUSiNkuYBoY2oi8fwHl5CPpJWJOcLkqWzBP8": {
+          "AppLambdaVersionWjg9tZACpKXxuHkBjxUVua9Pxa6Tz6UzUFahAqUJq4": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "AppLambdaFunction"
               },
-              "CodeSha256": "GndKi1+1xN8aKbtOwVt5ONik6YJLEv6tiXAxwilLV9g="
+              "CodeSha256": "tvU1PePOPSedcGDOGzSBb8RvU7VTAJZbokmMKiLC1zw="
             }
           },
           "ApiGatewayRestApi": {
@@ -323,7 +323,7 @@
               "AppLambdaPermissionApiGateway"
             ]
           },
-          "ApiGatewayDeployment1671175262936": {
+          "ApiGatewayDeployment1671418846925": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -385,7 +385,7 @@
           "AppLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "AppLambdaVersionXrb3F1ZUSiNkuYBoY2oi8fwHl5CPpJWJOcLkqWzBP8"
+              "Ref": "AppLambdaVersionWjg9tZACpKXxuHkBjxUVua9Pxa6Tz6UzUFahAqUJq4"
             },
             "Export": {
               "Name": "sls-CMS-dev-AppLambdaFunctionQualifiedArn"
@@ -549,7 +549,7 @@
         "timeout": 6,
         "runtime": "nodejs14.x",
         "vpc": {},
-        "versionLogicalId": "AppLambdaVersionXrb3F1ZUSiNkuYBoY2oi8fwHl5CPpJWJOcLkqWzBP8"
+        "versionLogicalId": "AppLambdaVersionWjg9tZACpKXxuHkBjxUVua9Pxa6Tz6UzUFahAqUJq4"
       }
     },
     "configValidationMode": "warn",
@@ -570,7 +570,7 @@
       "package": {
         "individually": false,
         "artifactsS3KeyDirname": "serverless/CMS/dev/code-artifacts",
-        "artifactDirectoryName": "serverless/CMS/dev/1671175283563-2022-12-16T07:21:23.563Z"
+        "artifactDirectoryName": "serverless/CMS/dev/1671418869724-2022-12-19T03:01:09.724Z"
       },
       "plugins": {
         "$ref": "$[\"service\"][\"plugins\"]"
@@ -581,7 +581,7 @@
   },
   "package": {
     "individually": false,
-    "artifactDirectoryName": "serverless/CMS/dev/1671175283563-2022-12-16T07:21:23.563Z",
+    "artifactDirectoryName": "serverless/CMS/dev/1671418869724-2022-12-19T03:01:09.724Z",
     "artifact": ""
   }
 }

@@ -1,6 +1,6 @@
 import {Response, Request, NextFunction} from "express"
 import CategoryService from "../services/category.service"
-import { PutObjectCommand, S3Client, GetObjectCommand, PutObjectCommandInput } from "@aws-sdk/client-s3";
+import { PutObjectCommand, S3Client, GetObjectCommand, PutObjectCommandInput, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import AWS from "aws-sdk";
 
@@ -92,9 +92,17 @@ export default class CategoryController{
 
     public deleteOneCategory = async (req:Request, res:Response, next:NextFunction)=>{
         const categoryId = req.params.id
+        const imageName = req.file.originalname
+        const imagePath = "category/"+imageName
+        const bucket = {
+            Bucket:bucketName,
+            Key:imagePath
+        }
         try{
             const deleteCategory = await this.categoryService.deleteOneCategory(categoryId);
-            res.status(201).json({"Response":"Category Has Been Deleted"})
+            // await s3.send(new DeleteObjectCommand(bucket));
+            // res.status(201).json({"Response":"Post Has Been Deleted"})
+            // res.status(201).json({"Response":"Category Has Been Deleted"})
         }catch(err){
             next(err)
         }
@@ -102,12 +110,24 @@ export default class CategoryController{
 
     public updateOneCategory = async (req:Request, res:Response, next:NextFunction)=>{
         const categoryId = req.params.id
+        const imageName = req.file.originalname
+        const imagePath = "category/"+imageName
         try{
+            const params: PutObjectCommandInput = {
+                ACL: "public-read",
+                ContentEncoding: "base64",
+                Bucket: bucketName,
+                Key: imagePath,
+                Body: req.file.buffer,
+                ContentType: req.file.mimetype,
+              };
+            const command = new PutObjectCommand(params)
+            await s3.send(command)
             await this.categoryService.updateOneCategory(
                 categoryId,
                 {
                     name:req.body.name,
-                    icon:req.body.icon
+                    icon:imagePath
                 }
             )
             res.send("Update Successfuly!")

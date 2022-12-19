@@ -3,6 +3,7 @@ export interface User {
     username:String;
     gender:String;
     age:Number;
+    profile:String
 }
 export interface DataStoredInToken {
     id: number;

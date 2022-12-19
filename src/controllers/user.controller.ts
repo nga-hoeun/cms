@@ -10,7 +10,8 @@ export default class UserController {
           email: req.body.email,
           username: req.body.username,
           gender: req.body.gender,
-          age:req.body.age
+          age:req.body.age,
+          profile:req.body.profile
         });
         res.status(201).json({ Response: "User Created Successfully" });
       } catch (error) {
@@ -39,7 +40,8 @@ export default class UserController {
                   username:req.body.username,
                   email:req.body.email,
                   gender:req.body.gender,
-                  age:req.body.age
+                  age:req.body.age,
+                  profile:req.body.profile
               }
           )
           res.send("Update Successfuly!")

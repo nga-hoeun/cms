@@ -96,6 +96,7 @@ export default class UserService {
                 gender: user.gender,
                 password: hash,
                 age: user.age,
+                profile:user.profile
               },
             });
           } catch (error) { 
@@ -122,6 +123,9 @@ export default class UserService {
         age: {
           $value: user.age,
         },
+        profile:{
+          $value: user.profile
+        }
       },
     });
     console.log(exp);
