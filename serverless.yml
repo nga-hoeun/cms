@@ -7,6 +7,22 @@ provider:
   runtime: nodejs14.x
   profile: APIStartUp
   region: ap-southeast-1
+
+  tracing:
+    # apiGateway: true
+    lambda: true
+  # logs:
+  #   restApi: true
+  httpApi:
+    # metrics: true # Enable if you need
+    cors: true
+  http:
+    # metrics: true # Enable if you need
+    cors: true
+    apiGateway:
+  restApiId:
+    Fn::ImportValue: cms-gateway:${opt:stage}:rest-api-id
+
   iam:
     role:
       statements:
@@ -24,6 +40,19 @@ functions:
       - http:
           path: /{proxy+}
           method: ANY
+
+resources:
+  Resources:
+    ApiGateway:
+      Type: AWS::ApiGateway::RestApi
+      Properties:
+        Name: ApiGateway-cms-${opt:stage}
+  Outputs:
+    ApiGatewayRestApiId:
+      Value:
+        Ref: ApiGateway
+      Export:
+        Name: cms-gateway:${opt:stage}:rest-api-id
 
 custom:
   bundle:
