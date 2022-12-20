@@ -1,32 +1,33 @@
 {
   "service": {
-    "service": "CMS",
+    "service": "cms-v1",
     "serviceObject": {
-      "name": "CMS"
+      "name": "cms-v1"
     },
     "provider": {
       "name": "aws",
       "runtime": "nodejs14.x",
-      "profile": "APIStartUp",
+      "profile": "cms",
       "region": "ap-southeast-1",
-      "iam": {
-        "role": {
-          "statements": [
-            {
-              "Effect": "Allow",
-              "Action": [
-                "dynamodb:*"
-              ],
-              "Resource": "*"
-            },
-            {
-              "Effect": "Allow",
-              "Action": [
-                "s3:*"
-              ],
-              "Resource": "*"
-            }
+      "deploymentBucket": "dev-cms-ap-southeast-1-deploy",
+      "tracing": {
+        "lambda": true
+      },
+      "httpApi": {
+        "cors": true
+      },
+      "http": {
+        "cors": true
+      },
+      "apiGateway": {
+        "restApiRootResourceId": {
+          "Fn::GetAtt": [
+            "ApiGateway",
+            "RootResourceId"
           ]
+        },
+        "restApiId": {
+          "Ref": "ApiGateway"
         }
       },
       "stage": "dev",
@@ -34,90 +35,24 @@
       "environment": {
         "DYNAMODB_TABLE": "CMS",
         "LOG_DIR": "./logs",
-        "USER": "slash",
+        "USER": "sophatvathana",
         "PASS": "vsyakohrymznwcrx",
-        "ACCESS_KEY": "AKIASQUBARMJQRTOOVN2",
-        "SECRET_ACCESS_KEY": "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",
+        "ACCESS_KEY": "AKIASQUBARMJU6OQU65P",
+        "SECRET_ACCESS_KEY": "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",
         "BUCKET_NAME": "store-files-img",
         "BUCKET_REGION": "ap-southeast-1"
+      },
+      "deploymentBucketObject": {
+        "name": "dev-cms-ap-southeast-1-deploy"
       },
       "compiledCloudFormationTemplate": {
         "AWSTemplateFormatVersion": "2010-09-09",
         "Description": "The AWS CloudFormation template for this Serverless application",
         "Resources": {
-          "ServerlessDeploymentBucket": {
-            "Type": "AWS::S3::Bucket",
-            "Properties": {
-              "BucketEncryption": {
-                "ServerSideEncryptionConfiguration": [
-                  {
-                    "ServerSideEncryptionByDefault": {
-                      "SSEAlgorithm": "AES256"
-                    }
-                  }
-                ]
-              }
-            }
-          },
-          "ServerlessDeploymentBucketPolicy": {
-            "Type": "AWS::S3::BucketPolicy",
-            "Properties": {
-              "Bucket": {
-                "Ref": "ServerlessDeploymentBucket"
-              },
-              "PolicyDocument": {
-                "Statement": [
-                  {
-                    "Action": "s3:*",
-                    "Effect": "Deny",
-                    "Principal": "*",
-                    "Resource": [
-                      {
-                        "Fn::Join": [
-                          "",
-                          [
-                            "arn:",
-                            {
-                              "Ref": "AWS::Partition"
-                            },
-                            ":s3:::",
-                            {
-                              "Ref": "ServerlessDeploymentBucket"
-                            },
-                            "/*"
-                          ]
-                        ]
-                      },
-                      {
-                        "Fn::Join": [
-                          "",
-                          [
-                            "arn:",
-                            {
-                              "Ref": "AWS::Partition"
-                            },
-                            ":s3:::",
-                            {
-                              "Ref": "ServerlessDeploymentBucket"
-                            }
-                          ]
-                        ]
-                      }
-                    ],
-                    "Condition": {
-                      "Bool": {
-                        "aws:SecureTransport": false
-                      }
-                    }
-                  }
-                ]
-              }
-            }
-          },
           "AppLogGroup": {
             "Type": "AWS::Logs::LogGroup",
             "Properties": {
-              "LogGroupName": "/aws/lambda/CMS-dev-app"
+              "LogGroupName": "/aws/lambda/cms-v1-dev-app"
             }
           },
           "IamRoleLambdaExecution": {
@@ -145,7 +80,7 @@
                     "Fn::Join": [
                       "-",
                       [
-                        "CMS",
+                        "cms-v1",
                         "dev",
                         "lambda"
                       ]
@@ -162,7 +97,7 @@
                         ],
                         "Resource": [
                           {
-                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/CMS-dev*:*"
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/cms-v1-dev*:*"
                           }
                         ]
                       },
@@ -173,15 +108,19 @@
                         ],
                         "Resource": [
                           {
-                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/CMS-dev*:*:*"
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/cms-v1-dev*:*:*"
                           }
                         ]
                       },
                       {
-                        "$ref": "$[\"service\"][\"provider\"][\"iam\"][\"role\"][\"statements\"][0]"
-                      },
-                      {
-                        "$ref": "$[\"service\"][\"provider\"][\"iam\"][\"role\"][\"statements\"][1]"
+                        "Effect": "Allow",
+                        "Action": [
+                          "xray:PutTraceSegments",
+                          "xray:PutTelemetryRecords"
+                        ],
+                        "Resource": [
+                          "*"
+                        ]
                       }
                     ]
                   }
@@ -192,7 +131,7 @@
                 "Fn::Join": [
                   "-",
                   [
-                    "CMS",
+                    "cms-v1",
                     "dev",
                     {
                       "Ref": "AWS::Region"
@@ -207,24 +146,25 @@
             "Type": "AWS::Lambda::Function",
             "Properties": {
               "Code": {
-                "S3Bucket": {
-                  "Ref": "ServerlessDeploymentBucket"
-                },
-                "S3Key": "serverless/CMS/dev/1671421612267-2022-12-19T03:46:52.267Z/CMS.zip"
+                "S3Bucket": "dev-cms-ap-southeast-1-deploy",
+                "S3Key": "serverless/cms-v1/dev/1671517411886-2022-12-20T06:23:31.886Z/cms-v1.zip"
               },
               "Handler": "src/handler.routesHandlers",
               "Runtime": "nodejs14.x",
-              "FunctionName": "CMS-dev-app",
+              "FunctionName": "cms-v1-dev-app",
               "MemorySize": 1024,
               "Timeout": 6,
+              "TracingConfig": {
+                "Mode": "Active"
+              },
               "Environment": {
                 "Variables": {
                   "DYNAMODB_TABLE": "CMS",
                   "LOG_DIR": "./logs",
-                  "USER": "slash",
+                  "USER": "sophatvathana",
                   "PASS": "vsyakohrymznwcrx",
-                  "ACCESS_KEY": "AKIASQUBARMJQRTOOVN2",
-                  "SECRET_ACCESS_KEY": "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",
+                  "ACCESS_KEY": "AKIASQUBARMJU6OQU65P",
+                  "SECRET_ACCESS_KEY": "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",
                   "BUCKET_NAME": "store-files-img",
                   "BUCKET_REGION": "ap-southeast-1"
                 }
@@ -240,26 +180,14 @@
               "AppLogGroup"
             ]
           },
-          "AppLambdaVersionoGRLzOxPEpjsQvkMdcmGuVur5AGwXnso3kqPCkF8": {
+          "AppLambdaVersionks7yJxVHfa1DtsAWVayu78qucTWMRIvgiXDQM88A": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "AppLambdaFunction"
               },
-              "CodeSha256": "zZ6nQPjxenhyhvZRdKUK/PMfcAR5w58shLYWNTVEuH8="
-            }
-          },
-          "ApiGatewayRestApi": {
-            "Type": "AWS::ApiGateway::RestApi",
-            "Properties": {
-              "Name": "dev-CMS",
-              "EndpointConfiguration": {
-                "Types": [
-                  "EDGE"
-                ]
-              },
-              "Policy": ""
+              "CodeSha256": "ISkxtgLDt6LqaGHhMXuCyGE4KOOJBNvM24G8BuUI9jQ="
             }
           },
           "ApiGatewayResourceProxyVar": {
@@ -267,13 +195,13 @@
             "Properties": {
               "ParentId": {
                 "Fn::GetAtt": [
-                  "ApiGatewayRestApi",
+                  "ApiGateway",
                   "RootResourceId"
                 ]
               },
               "PathPart": "{proxy+}",
               "RestApiId": {
-                "Ref": "ApiGatewayRestApi"
+                "Ref": "ApiGateway"
               }
             }
           },
@@ -286,7 +214,7 @@
                 "Ref": "ApiGatewayResourceProxyVar"
               },
               "RestApiId": {
-                "Ref": "ApiGatewayRestApi"
+                "Ref": "ApiGateway"
               },
               "ApiKeyRequired": false,
               "AuthorizationType": "NONE",
@@ -323,11 +251,11 @@
               "AppLambdaPermissionApiGateway"
             ]
           },
-          "ApiGatewayDeployment1671421593887": {
+          "ApiGatewayDeployment1671517405205": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
-                "Ref": "ApiGatewayRestApi"
+                "Ref": "ApiGateway"
               },
               "StageName": "dev"
             },
@@ -364,31 +292,35 @@
                     },
                     ":",
                     {
-                      "Ref": "ApiGatewayRestApi"
+                      "$ref": "$[\"service\"][\"provider\"][\"apiGateway\"][\"restApiId\"]"
                     },
                     "/*/*"
                   ]
                 ]
               }
             }
+          },
+          "ApiGateway": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Properties": {
+              "Name": "ApiGateway-cms-dev"
+            }
           }
         },
         "Outputs": {
           "ServerlessDeploymentBucketName": {
-            "Value": {
-              "Ref": "ServerlessDeploymentBucket"
-            },
+            "Value": "dev-cms-ap-southeast-1-deploy",
             "Export": {
-              "Name": "sls-CMS-dev-ServerlessDeploymentBucketName"
+              "Name": "sls-cms-v1-dev-ServerlessDeploymentBucketName"
             }
           },
           "AppLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "AppLambdaVersionoGRLzOxPEpjsQvkMdcmGuVur5AGwXnso3kqPCkF8"
+              "Ref": "AppLambdaVersionks7yJxVHfa1DtsAWVayu78qucTWMRIvgiXDQM88A"
             },
             "Export": {
-              "Name": "sls-CMS-dev-AppLambdaFunctionQualifiedArn"
+              "Name": "sls-cms-v1-dev-AppLambdaFunctionQualifiedArn"
             }
           },
           "ServiceEndpoint": {
@@ -399,7 +331,7 @@
                 [
                   "https://",
                   {
-                    "Ref": "ApiGatewayRestApi"
+                    "Ref": "ApiGateway"
                   },
                   ".execute-api.",
                   {
@@ -414,89 +346,26 @@
               ]
             },
             "Export": {
-              "Name": "sls-CMS-dev-ServiceEndpoint"
-            }
-          }
-        }
-      },
-      "coreCloudFormationTemplate": {
-        "AWSTemplateFormatVersion": "2010-09-09",
-        "Description": "The AWS CloudFormation template for this Serverless application",
-        "Resources": {
-          "ServerlessDeploymentBucket": {
-            "Type": "AWS::S3::Bucket",
-            "Properties": {
-              "BucketEncryption": {
-                "ServerSideEncryptionConfiguration": [
-                  {
-                    "ServerSideEncryptionByDefault": {
-                      "SSEAlgorithm": "AES256"
-                    }
-                  }
-                ]
-              }
+              "Name": "sls-cms-v1-dev-ServiceEndpoint"
             }
           },
-          "ServerlessDeploymentBucketPolicy": {
-            "Type": "AWS::S3::BucketPolicy",
-            "Properties": {
-              "Bucket": {
-                "Ref": "ServerlessDeploymentBucket"
-              },
-              "PolicyDocument": {
-                "Statement": [
-                  {
-                    "Action": "s3:*",
-                    "Effect": "Deny",
-                    "Principal": "*",
-                    "Resource": [
-                      {
-                        "Fn::Join": [
-                          "",
-                          [
-                            "arn:",
-                            {
-                              "Ref": "AWS::Partition"
-                            },
-                            ":s3:::",
-                            {
-                              "Ref": "ServerlessDeploymentBucket"
-                            },
-                            "/*"
-                          ]
-                        ]
-                      },
-                      {
-                        "Fn::Join": [
-                          "",
-                          [
-                            "arn:",
-                            {
-                              "Ref": "AWS::Partition"
-                            },
-                            ":s3:::",
-                            {
-                              "Ref": "ServerlessDeploymentBucket"
-                            }
-                          ]
-                        ]
-                      }
-                    ],
-                    "Condition": {
-                      "Bool": {
-                        "aws:SecureTransport": false
-                      }
-                    }
-                  }
-                ]
-              }
-            }
-          }
-        },
-        "Outputs": {
-          "ServerlessDeploymentBucketName": {
+          "ApiGatewayRestApiId": {
             "Value": {
-              "Ref": "ServerlessDeploymentBucket"
+              "Ref": "ApiGateway"
+            },
+            "Export": {
+              "Name": "cms-gateway:dev:rest-api-id"
+            }
+          },
+          "ApiGatewayRestApiRootResourceId": {
+            "Value": {
+              "Fn::GetAtt": [
+                "ApiGateway",
+                "RootResourceId"
+              ]
+            },
+            "Export": {
+              "Name": "cms-gateway:dev:root-resource-id"
             }
           }
         }
@@ -526,7 +395,8 @@
     "plugins": [
       "serverless-dotenv-plugin",
       "serverless-bundle",
-      "serverless-offline"
+      "serverless-offline",
+      "serverless-deployment-bucket"
     ],
     "pluginsData": {},
     "functions": {
@@ -541,22 +411,53 @@
             }
           }
         ],
-        "name": "CMS-dev-app",
+        "name": "cms-v1-dev-app",
         "package": {
-          "artifact": ".serverless/CMS.zip"
+          "artifact": ".serverless/cms-v1.zip"
         },
         "memory": 1024,
         "timeout": 6,
         "runtime": "nodejs14.x",
         "vpc": {},
-        "versionLogicalId": "AppLambdaVersionoGRLzOxPEpjsQvkMdcmGuVur5AGwXnso3kqPCkF8"
+        "versionLogicalId": "AppLambdaVersionks7yJxVHfa1DtsAWVayu78qucTWMRIvgiXDQM88A"
+      }
+    },
+    "resources": {
+      "Resources": {
+        "ApiGateway": {
+          "Type": "AWS::ApiGateway::RestApi",
+          "Properties": {
+            "Name": "ApiGateway-cms-dev"
+          }
+        }
+      },
+      "Outputs": {
+        "ApiGatewayRestApiId": {
+          "Value": {
+            "Ref": "ApiGateway"
+          },
+          "Export": {
+            "Name": "cms-gateway:dev:rest-api-id"
+          }
+        },
+        "ApiGatewayRestApiRootResourceId": {
+          "Value": {
+            "Fn::GetAtt": [
+              "ApiGateway",
+              "RootResourceId"
+            ]
+          },
+          "Export": {
+            "Name": "cms-gateway:dev:root-resource-id"
+          }
+        }
       }
     },
     "configValidationMode": "warn",
     "serviceFilename": "serverless.yml",
     "initialServerlessConfig": {
-      "service": "CMS",
       "frameworkVersion": "3",
+      "service": "cms-v1",
       "useDotenv": true,
       "provider": {
         "$ref": "$[\"service\"][\"provider\"]"
@@ -564,13 +465,17 @@
       "functions": {
         "$ref": "$[\"service\"][\"functions\"]"
       },
+      "resources": {
+        "$ref": "$[\"service\"][\"resources\"]"
+      },
       "custom": {
         "$ref": "$[\"service\"][\"custom\"]"
       },
       "package": {
         "individually": false,
-        "artifactsS3KeyDirname": "serverless/CMS/dev/code-artifacts",
-        "artifactDirectoryName": "serverless/CMS/dev/1671421612267-2022-12-19T03:46:52.267Z"
+        "artifactsS3KeyDirname": "serverless/cms-v1/dev/code-artifacts",
+        "deploymentBucket": "dev-cms-ap-southeast-1-deploy",
+        "artifactDirectoryName": "serverless/cms-v1/dev/1671517411886-2022-12-20T06:23:31.886Z"
       },
       "plugins": {
         "$ref": "$[\"service\"][\"plugins\"]"
@@ -581,7 +486,7 @@
   },
   "package": {
     "individually": false,
-    "artifactDirectoryName": "serverless/CMS/dev/1671421612267-2022-12-19T03:46:52.267Z",
+    "artifactDirectoryName": "serverless/cms-v1/dev/1671517411886-2022-12-20T06:23:31.886Z",
     "artifact": ""
   }
 }

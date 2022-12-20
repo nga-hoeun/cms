@@ -1,13 +1,14 @@
-service: CMS
 frameworkVersion: "3"
+service: cms-v1
 useDotenv: true
 
 provider:
   name: aws
   runtime: nodejs14.x
-  profile: APIStartUp
+  profile: cms
   region: ap-southeast-1
-
+  deploymentBucket:
+    name: ${opt:stage}-cms-${opt:region, self:provider.region}-deploy
   tracing:
     # apiGateway: true
     lambda: true
@@ -19,19 +20,41 @@ provider:
   http:
     # metrics: true # Enable if you need
     cors: true
-    apiGateway:
-  restApiId:
-    Fn::ImportValue: cms-gateway:${opt:stage}:rest-api-id
+  apiGateway:
+    restApiRootResourceId:
+      Fn::GetAtt:
+        - ApiGateway
+        - RootResourceId
+    restApiId:
+      Ref: ApiGateway
 
+  #version3
   iam:
     role:
+      name: cms-main-iam-roles
       statements:
         - Effect: Allow
-          Action: "dynamodb:*"
-          Resource: "*"
+          Action:
+            - "s3:*"
+          Resource:
+            - "*"
         - Effect: Allow
-          Action: "s3:*"
-          Resource: "*"
+          Action:
+            - "execute-api:ManageConnections"
+          Resource:
+            - "arn:aws:execute-api:*:*:**/@connections/*"
+        - Effect: Allow
+          Action:
+            - "dynamodb:PutItem"
+            - "dynamodb:GetItem"
+            - "dynamodb:UpdateItem"
+            - "dynamodb:DeleteItem"
+            - "dynamodb:BatchGetItem"
+            - "dynamodb:BatchWriteItem"
+            - "dynamodb:Query"
+            - "dynamodb:Scan"
+          Resource:
+            - "*"
 
 functions:
   app:
@@ -53,6 +76,13 @@ resources:
         Ref: ApiGateway
       Export:
         Name: cms-gateway:${opt:stage}:rest-api-id
+    ApiGatewayRestApiRootResourceId:
+      Value:
+        Fn::GetAtt:
+          - ApiGateway
+          - RootResourceId
+      Export:
+        Name: cms-gateway:${opt:stage}:root-resource-id
 
 custom:
   bundle:
@@ -65,3 +95,4 @@ plugins:
   - serverless-dotenv-plugin
   - serverless-bundle
   - serverless-offline
+  - serverless-deployment-bucket
