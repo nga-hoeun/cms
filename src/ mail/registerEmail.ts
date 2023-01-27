@@ -24,5 +24,6 @@ export default class EmailController {
                 </div>`,
       })
       .catch((err) => console.log(err));
+      console.log("Email sent successfully")
   };
 }

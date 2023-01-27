@@ -9,11 +9,7 @@ import { HttpException } from "../utils/error.utils";
 import { v4 as uuidv4 } from "uuid";
 import { Category } from "../interfaces/categories.interface";
 import { CategoryModel } from "@/models/cms.model";
-import { ParsedQs } from "qs";
 const ddb = new dynamoose.aws.sdk.DynamoDB({
-  // accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  // secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  // region: process.env.AWS_REGION,
 });
 // Set DynamoDB instance to the Dynamoose DDB instance
 dynamoose.aws.ddb.set(ddb);
@@ -51,6 +47,17 @@ export default class CategoryService {
         .where("Payload.name")
         .eq(category)
     ).exec();
+    if ((await categoryFound).count == 0) {
+      throw new HttpException(404, "Category doesn't exist");
+    }
+    return categoryFound;
+  }
+
+  public async showCategory(id: string) {
+    const categoryFound = CategoryModel.query({
+      pk: "CATEGORY#ALL",
+      sk: `CATEGORY#${id}`,
+    }).exec();
     if ((await categoryFound).count == 0) {
       throw new HttpException(404, "Category doesn't exist");
     }

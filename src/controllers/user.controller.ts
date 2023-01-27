@@ -9,9 +9,10 @@ export default class UserController {
         await this.userService.createUser({
           email: req.body.email,
           username: req.body.username,
+          role:req.body.role,
           gender: req.body.gender,
           age:req.body.age,
-          profile:req.body.profile
+          image:req.body.image
         });
         res.status(201).json({ Response: "User Created Successfully" });
       } catch (error) {
@@ -27,26 +28,29 @@ export default class UserController {
         );
         res.status(200).json({ data: tokenData, message: "login", id:userId, role:userRole });
       } catch (error) {
-        next(error);
+        res.status(401).json({"Message":error.message})
       }
     };
 
     public updateOneUser = async (req:Request, res:Response, next:NextFunction)=>{
       const userId = req.params.id
+      const imagePath = "user/"+req.body.image
+      console.log(req.body)
       try{
           await this.userService.updateUser(
               userId,
               {
-                  username:req.body.username,
-                  email:req.body.email,
-                  gender:req.body.gender,
-                  age:req.body.age,
-                  profile:req.body.profile
+                username:req.body.username,
+                email:req.body.email,
+                role:req.body.role,
+                gender:req.body.gender,
+                age:req.body.age,
+                image:imagePath
               }
           )
           res.send("Update Successfuly!")
       }catch(error){
-          next(error)
+          console.log(error)
       }
     }
     public filterUser = async (req:Request, res:Response, next:NextFunction)=>{

@@ -12,9 +12,6 @@ import { PostModel } from "@/models/cms.model";
 import { ParsedQs } from "qs";
 
 const ddb = new dynamoose.aws.sdk.DynamoDB({
-  // accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  // secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  // region: process.env.AWS_REGION,
 });
 // Set DynamoDB instance to the Dynamoose DDB instance
 dynamoose.aws.ddb.set(ddb);

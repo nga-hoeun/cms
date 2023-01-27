@@ -1,14 +1,14 @@
 frameworkVersion: "3"
-service: cms-v1
+service: cms-v2
 useDotenv: true
 
 provider:
   name: aws
   runtime: nodejs14.x
-  profile: cms
+  profile: CMS_USER
   region: ap-southeast-1
   deploymentBucket:
-    name: ${opt:stage}-cms-${opt:region, self:provider.region}-deploy
+    name: ${opt:stage}-cms-${opt:region, self:provider.region}
   tracing:
     # apiGateway: true
     lambda: true
@@ -63,6 +63,7 @@ functions:
       - http:
           path: /{proxy+}
           method: ANY
+          cors: true
 
 resources:
   Resources:

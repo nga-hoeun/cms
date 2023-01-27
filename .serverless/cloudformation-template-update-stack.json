@@ -5,7 +5,7 @@
     "AppLogGroup": {
       "Type": "AWS::Logs::LogGroup",
       "Properties": {
-        "LogGroupName": "/aws/lambda/cms-v1-dev-app"
+        "LogGroupName": "/aws/lambda/cms-v2-dev-app"
       }
     },
     "IamRoleLambdaExecution": {
@@ -33,7 +33,7 @@
               "Fn::Join": [
                 "-",
                 [
-                  "cms-v1",
+                  "cms-v2",
                   "dev",
                   "lambda"
                 ]
@@ -50,7 +50,7 @@
                   ],
                   "Resource": [
                     {
-                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/cms-v1-dev*:*"
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/cms-v2-dev*:*"
                     }
                   ]
                 },
@@ -61,8 +61,40 @@
                   ],
                   "Resource": [
                     {
-                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/cms-v1-dev*:*:*"
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/cms-v2-dev*:*:*"
                     }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:*"
+                  ],
+                  "Resource": [
+                    "*"
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "execute-api:ManageConnections"
+                  ],
+                  "Resource": "arn:aws:execute-api:*:*:**/@connections/*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:PutItem",
+                    "dynamodb:GetItem",
+                    "dynamodb:UpdateItem",
+                    "dynamodb:DeleteItem",
+                    "dynamodb:BatchGetItem",
+                    "dynamodb:BatchWriteItem",
+                    "dynamodb:Query",
+                    "dynamodb:Scan"
+                  ],
+                  "Resource": [
+                    "*"
                   ]
                 },
                 {
@@ -80,31 +112,19 @@
           }
         ],
         "Path": "/",
-        "RoleName": {
-          "Fn::Join": [
-            "-",
-            [
-              "cms-v1",
-              "dev",
-              {
-                "Ref": "AWS::Region"
-              },
-              "lambdaRole"
-            ]
-          ]
-        }
+        "RoleName": "cms-main-iam-roles"
       }
     },
     "AppLambdaFunction": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
         "Code": {
-          "S3Bucket": "dev-cms-ap-southeast-1-deploy",
-          "S3Key": "serverless/cms-v1/dev/1671517411886-2022-12-20T06:23:31.886Z/cms-v1.zip"
+          "S3Bucket": "dev-cms-ap-southeast-1",
+          "S3Key": "serverless/cms-v2/dev/1674532339825-2023-01-24T03:52:19.825Z/cms-v2.zip"
         },
         "Handler": "src/handler.routesHandlers",
         "Runtime": "nodejs14.x",
-        "FunctionName": "cms-v1-dev-app",
+        "FunctionName": "cms-v2-dev-app",
         "MemorySize": 1024,
         "Timeout": 6,
         "TracingConfig": {
@@ -114,11 +134,11 @@
           "Variables": {
             "DYNAMODB_TABLE": "CMS",
             "LOG_DIR": "./logs",
-            "USER": "sophatvathana",
+            "USER": "slash",
             "PASS": "vsyakohrymznwcrx",
-            "ACCESS_KEY": "AKIASQUBARMJU6OQU65P",
-            "SECRET_ACCESS_KEY": "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",
-            "BUCKET_NAME": "store-files-img",
+            "ACCESS_KEY": "AKIA4WLSZ5UWW4WKHBPP",
+            "SECRET_ACCESS_KEY": "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",
+            "BUCKET_NAME": "store-file-img",
             "BUCKET_REGION": "ap-southeast-1"
           }
         },
@@ -133,14 +153,14 @@
         "AppLogGroup"
       ]
     },
-    "AppLambdaVersionks7yJxVHfa1DtsAWVayu78qucTWMRIvgiXDQM88A": {
+    "AppLambdaVersionW6r6uh0TpHjLaCewdcWXD9zLVYE8xWCOpuTscUhNn4": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "AppLambdaFunction"
         },
-        "CodeSha256": "ISkxtgLDt6LqaGHhMXuCyGE4KOOJBNvM24G8BuUI9jQ="
+        "CodeSha256": "A+ogrs4fBwHRJJdkQhtoH1DgPl/+wceJqsJVrs2LIXI="
       }
     },
     "ApiGatewayResourceProxyVar": {
@@ -153,6 +173,51 @@
           ]
         },
         "PathPart": "{proxy+}",
+        "RestApiId": {
+          "Ref": "ApiGateway"
+        }
+      }
+    },
+    "ApiGatewayMethodProxyVarOptions": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "OPTIONS",
+        "MethodResponses": [
+          {
+            "StatusCode": "200",
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Methods": true
+            },
+            "ResponseModels": {}
+          }
+        ],
+        "RequestParameters": {},
+        "Integration": {
+          "Type": "MOCK",
+          "RequestTemplates": {
+            "application/json": "{statusCode:200}"
+          },
+          "ContentHandling": "CONVERT_TO_TEXT",
+          "IntegrationResponses": [
+            {
+              "StatusCode": "200",
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,DELETE,GET,HEAD,PATCH,POST,PUT'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              }
+            }
+          ]
+        },
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceProxyVar"
+        },
         "RestApiId": {
           "Ref": "ApiGateway"
         }
@@ -204,7 +269,7 @@
         "AppLambdaPermissionApiGateway"
       ]
     },
-    "ApiGatewayDeployment1671517405205": {
+    "ApiGatewayDeployment1674532318591": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -213,6 +278,7 @@
         "StageName": "dev"
       },
       "DependsOn": [
+        "ApiGatewayMethodProxyVarOptions",
         "ApiGatewayMethodProxyVarAny"
       ]
     },
@@ -262,18 +328,18 @@
   },
   "Outputs": {
     "ServerlessDeploymentBucketName": {
-      "Value": "dev-cms-ap-southeast-1-deploy",
+      "Value": "dev-cms-ap-southeast-1",
       "Export": {
-        "Name": "sls-cms-v1-dev-ServerlessDeploymentBucketName"
+        "Name": "sls-cms-v2-dev-ServerlessDeploymentBucketName"
       }
     },
     "AppLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "AppLambdaVersionks7yJxVHfa1DtsAWVayu78qucTWMRIvgiXDQM88A"
+        "Ref": "AppLambdaVersionW6r6uh0TpHjLaCewdcWXD9zLVYE8xWCOpuTscUhNn4"
       },
       "Export": {
-        "Name": "sls-cms-v1-dev-AppLambdaFunctionQualifiedArn"
+        "Name": "sls-cms-v2-dev-AppLambdaFunctionQualifiedArn"
       }
     },
     "ServiceEndpoint": {
@@ -299,7 +365,7 @@
         ]
       },
       "Export": {
-        "Name": "sls-cms-v1-dev-ServiceEndpoint"
+        "Name": "sls-cms-v2-dev-ServiceEndpoint"
       }
     },
     "ApiGatewayRestApiId": {

@@ -1,37 +1,10 @@
 import {Response, Request, NextFunction} from "express"
 import PostService from "../services/post.service"
-import { PutObjectCommand, S3Client, GetObjectCommand, PutObjectCommandInput, DeleteObjectCommand } from "@aws-sdk/client-s3";
-
-const bucketName = process.env.BUCKET_NAME
-const bucketRegion = process.env.BUCKET_REGION
-const accessKey = process.env.ACCESS_KEY
-const secretAccessKey = process.env.SECRET_ACCESS_KEY
-
-const s3 = new S3Client({
-    credentials:{
-        accessKeyId:accessKey,
-        secretAccessKey:secretAccessKey
-    },
-    region:bucketRegion
-})
-
 export default class PostController{
     public postService = new PostService();
     public constructPost = async (req:Request, res:Response)=>{
         try{
-            // console.log(req.body)
-            const imageName = req.file.originalname
-            const imagePath = "post/2022-12/"+imageName
-            const params:PutObjectCommandInput = {
-                ACL:'public-read',
-                ContentEncoding:"64",
-                Bucket:bucketName,
-                Key:imagePath,
-                Body:req.file.buffer,
-                ContentType:req.file.mimetype
-            }
-            const command = new PutObjectCommand(params)
-            await s3.send(command)
+            const imagePath = "post/2022-12/"+req.body.image
             await this.postService.createPost({
                 category:req.body.category,
                 title: req.body.title,
@@ -51,7 +24,6 @@ export default class PostController{
         }catch(error){
             next(error)
         }
-        // res.send({Message:"Hello World"})
     }
     public getOnePost  = async (req:Request, res:Response, next: NextFunction)=>{
         const postId = req.params.id
@@ -78,15 +50,8 @@ export default class PostController{
 
     public deleteOnePost = async (req:Request, res:Response, next:NextFunction)=>{
         const postId = req.params.id
-        const imageName = req.file.originalname
-        const imagePath = "post/2022-12/"+imageName
-        const bucket = {
-            Bucket:bucketName,
-            Key:imagePath
-        }
         try{
             await this.postService.deleteOnePost(postId);
-            await s3.send(new DeleteObjectCommand(bucket));
             res.status(201).json({"Response":"Post Has Been Deleted"})
         }catch(err){
             next(err)
@@ -95,19 +60,9 @@ export default class PostController{
 
     public updateOnePost = async (req:Request, res:Response, next:NextFunction)=>{
         const postId = req.params.id
-        const imageName = req.file.originalname
-        const imagePath = "post/2022-12/"+imageName
+        const imagePath = "post/2022-12/"+req.body.image
+        console.log(req.body)
         try{
-            const params:PutObjectCommandInput = {
-                ACL:'public-read',
-                ContentEncoding:"64",
-                Bucket:bucketName,
-                Key:imagePath,
-                Body:req.file.buffer,
-                ContentType:req.file.mimetype
-            }
-            const command = new PutObjectCommand(params)
-            await s3.send(command)
             await this.postService.updateOnePost(
                 postId,
                 {
@@ -117,7 +72,7 @@ export default class PostController{
                     image:imagePath
                 }
             )
-            res.send("Update Successfuly!")
+            res.status(201).json({ Response: "Post Updated Successfully" });
         }catch(error){
             next(error)
         }

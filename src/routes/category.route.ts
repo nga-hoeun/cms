@@ -2,7 +2,6 @@ import { Router } from "express";
 import { Routes } from "../interfaces/routes.interface";
 import CategoryController from "../controllers/category.controller";
 import authMiddleware from "../middlewares/auth.middleware";
-import upload from "../middlewares/multer.middleware";
 
 export default class CategoryRoutes implements Routes {
   public path = "/category";
@@ -16,14 +15,15 @@ export default class CategoryRoutes implements Routes {
   private initializeRoutes() {
     this.router.post(
       `${this.path}/`,
-      upload.single("icon"),
+      authMiddleware,
       this.categoryController.createCategory
     );
     this.router.get(
       `${this.path}/:category`,
+      authMiddleware,
       this.categoryController.getOneCategory
     );
-    this.router.get(`${this.path}/`, this.categoryController.getAllCategory);
+    this.router.get(`${this.path}/`,authMiddleware, this.categoryController.getAllCategory);
     this.router.put(
       `${this.path}/:id`,
       authMiddleware,
@@ -31,6 +31,7 @@ export default class CategoryRoutes implements Routes {
     );
     this.router.delete(
       `${this.path}/:id`,
+      authMiddleware,
       this.categoryController.deleteOneCategory
     );
   }

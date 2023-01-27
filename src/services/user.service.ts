@@ -13,7 +13,6 @@ import {
 } from "aws-sdk/clients/dynamodb";
 import { AnyDocument } from "dynamoose/dist/Document";
 import { HttpException } from "../utils/error.utils";
-import { isEmpty } from "../utils/create.util";
 import Generator from "generate-password";
 import { v4 as uuidv4 } from "uuid";
 import { getDynamoExpression } from "../utils/dynamoose.util";
@@ -22,9 +21,6 @@ import MailController from "../ mail/registerEmail";
 import { ParsedQs } from "qs";
 
 const ddb = new dynamoose.aws.sdk.DynamoDB({
-  // accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  // secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  // region: process.env.AWS_REGION,
 });
 // Set DynamoDB instance to the Dynamoose DDB instance
 dynamoose.aws.ddb.set(ddb);
@@ -53,7 +49,10 @@ export default class UserService {
   }
 
   public createToken(user: AnyDocument): TokenData {
-    const dataStoredInToken: DataStoredInToken = { id: user.id };
+    const dataStoredInToken: DataStoredInToken = {
+      id: user.id,
+      role: user.Payload.role,
+    };
     const secretKey: string = process.env.AWS_ACCESS_KEY_ID;
     const expiresIn: number = 600 * 600;
 
@@ -69,9 +68,7 @@ export default class UserService {
       .eq(user.email)
       .exec();
     console.log(userToFind);
-    if (isEmpty(user)) {
-      throw new HttpException(400, "Didn't meet all the required fields");
-    } else if (userToFind.count != 0) {
+    if (userToFind.count != 0) {
       throw new HttpException(409, `This email ${user.email} already exists.`);
     } else {
       const password = Generator.generate({
@@ -82,37 +79,43 @@ export default class UserService {
         lowercase: true,
       });
       console.log(password);
-      bcrypt.genSalt(saltRounds, (err, salt) => {
-        bcrypt.hash(password, salt, (err, hash) => {
-          // Store hash in your password DB.
-          try {
-            UserModel.create({
-              id: userId,
-              pk: `USER#ALL`,
-              sk: `USER#${userId}`,
-              Payload: {
-                username: user.username,
-                email: user.email,
-                gender: user.gender,
-                password: hash,
-                age: user.age,
-                profile:user.profile
-              },
-            });
-          } catch (error) {
-            console.log(error);
-          }
+      const hashedPass = await new Promise((resolve, reject) => {
+        bcrypt.hash(password, saltRounds, function(err, hash) {
+          if (err) reject(err)
+          resolve(hash)
         });
-      });
-      // this.MailController.sendPassword(user.email, password, user.username);
+      })
+      this.MailController.sendPassword(user.email, password, user.username);
+      try {
+        await UserModel.create({
+          id: userId,
+          pk: `USER#ALL`,
+          sk: `USER#${userId}`,
+          Payload: {
+            role: user.role,
+            username: user.username,
+            email: user.email,
+            gender: user.gender,
+            password: hashedPass,
+            age: user.age,
+            image: user.image,
+          },
+        });
+      } catch (error) {
+        console.log(error);
+      }
     }
   }
+
 
   public async updateUser(id: string, user: User) {
     const exp = getDynamoExpression({
       Payload: {
         email: {
           $value: user.email,
+        },
+        role: {
+          $value: user.role,
         },
         username: {
           $value: user.username,
@@ -123,9 +126,9 @@ export default class UserService {
         age: {
           $value: user.age,
         },
-        profile:{
-          $value: user.profile
-        }
+        image: {
+          $value: user.image,
+        },
       },
     });
     console.log(exp);
@@ -144,12 +147,12 @@ export default class UserService {
     console.log(params);
     try {
       const data = await ddbClient.updateItem(params).promise();
-      console.log("Success - item added or updated", data);
       return data;
     } catch (err) {
       console.log("Error", err);
     }
   }
+
 
   public async getOneUser(id: string) {
     const userFound = UserModel.query({
@@ -169,48 +172,54 @@ export default class UserService {
   ) {
     var userFound = [];
     const listUser = await this.getListUser(id);
-    console.log(gender, name, age);
+    console.log(listUser);
+    console.log({ gender: gender, name: name, age: age });
 
-    if (gender == "" && age == "" && name == "") {
-      userFound = await UserModel.query({
-        pk: "USER#ALL",
-      }).exec();
-    } else if (gender == "" && age == "") {
+    if (gender == "" && (age == "null" || age == "") && name == "") {
+      userFound = listUser;
+      console.log("ALL");
+    } else if (gender == "" && (age == "null" || age == "")) {
       listUser.forEach((user) => {
         if (user.Payload.username == name) {
           userFound.push(user);
         }
       });
+      console.log("Name");
     } else if (gender == "" && name == "") {
       listUser.forEach((user) => {
         if (user.Payload.age == age) {
           userFound.push(user);
         }
       });
-    } else if (name == "" && age == "") {
+      console.log("Age");
+    } else if (name == "" && (age == "null" || age == "")) {
       listUser.forEach((user) => {
         if (user.Payload.gender == gender) {
           userFound.push(user);
         }
       });
+      console.log("Gender");
     } else if (gender == "") {
       listUser.forEach((user) => {
         if (user.Payload.age == age && user.Payload.username == name) {
           userFound.push(user);
         }
       });
-    } else if (age == "") {
+      console.log("Age and Name");
+    } else if (age == "null" || age == "") {
       listUser.forEach((user) => {
         if (user.Payload.gender == age && user.Payload.username == name) {
           userFound.push(user);
         }
       });
+      console.log("Gender and Name");
     } else if (name == "") {
       listUser.forEach((user) => {
         if (user.Payload.age == age && user.Payload.gender == gender) {
           userFound.push(user);
         }
       });
+      console.log("Age and Gender");
     } else {
       listUser.forEach((user) => {
         if (
@@ -221,21 +230,8 @@ export default class UserService {
           userFound.push(user);
         }
       });
+      console.log("All category met");
     }
-    //   userFound = await UserModel.query(new dynamoose.Condition().where("pk").eq("USER#ALL").where("sk").not().eq(`USER#${id}`).where("Payload.username").eq(name)).exec();
-    // }else if(gender == ""&& name == ""){
-    //   userFound = await UserModel.query(new dynamoose.Condition().where("pk").eq("USER#ALL").where("Payload.email").eq(email)).exec();
-    // }else if(name == "" && email == ""){
-    //   userFound = await UserModel.query(new dynamoose.Condition().where("pk").eq("USER#ALL").where("Payload.gender").eq(gender)).exec();
-    // }else if(gender == ""){
-    //   userFound = await UserModel.query(new dynamoose.Condition().where("pk").eq("USER#ALL").where("Payload.username").eq(name).where("Payload.email").eq(email)).exec();
-    // }else if(email == ""){
-    //   userFound = await UserModel.query(new dynamoose.Condition().where("pk").eq("USER#ALL").where("Payload.username").eq(name).where("Payload.gender").eq(gender)).exec();
-    // }else if(name == ""){
-    //   userFound = await UserModel.query(new dynamoose.Condition().where("pk").eq("USER#ALL").where("Payload.gender").eq(gender).where("Payload.email").eq(email)).exec();
-    // }else{
-    //   userFound = await UserModel.query(new dynamoose.Condition().where("pk").eq("USER#ALL").where("Payload.username").eq(name).where("Payload.email").eq(email).where("Payload.gender").eq(gender)).exec();
-    // }
     console.log(userFound);
     return userFound;
   }
